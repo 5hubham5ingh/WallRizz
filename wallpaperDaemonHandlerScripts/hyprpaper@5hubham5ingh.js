@@ -5,9 +5,7 @@
 */
 
 export function setWallpaper(wallpaperPath) {
-  catchError(() => {
-    OS.exec(["hyprctl", "-q", "hyprpaper unload all"]);
-    OS.exec(["hyprctl", "-q", `hyprpaper preload ${wallpaperPath}`]);
-    OS.exec(["hyprctl", "-q", `hyprpaper wallpaper eDP-1,${wallpaperPath}`]);
-  }, "setWallpaper");
+  OS.exec(["hyprctl", "-q", "hyprpaper unload all"]);
+  OS.exec(["hyprctl", "-q", `hyprpaper preload ${wallpaperPath}`]);
+  OS.exec(["hyprctl", "-q", `hyprpaper wallpaper eDP-1,${wallpaperPath}`]);
 }

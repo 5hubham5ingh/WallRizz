@@ -2,7 +2,6 @@ import * as std from "../../qjs-ext-lib/src/std.js";
 import * as os from "../../qjs-ext-lib/src/os.js";
 import { ansi } from "../../justjs/ansiStyle.js";
 import { exec as execAsync } from "../../qjs-ext-lib/src/process.js";
-import { cursorShow } from "../../justjs/cursor.js";
 import Color from "./Color/color.js";
 
 globalThis.Color = Color;
@@ -36,9 +35,6 @@ globalThis.SystemError = class SystemError extends Error {
     this.name = name;
     this.description = description;
     this.body = body;
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, SystemError);
-    }
   }
 
   /**
@@ -46,55 +42,17 @@ globalThis.SystemError = class SystemError extends Error {
    *
    * @param {boolean} inspect - Wheather to print the error body or not for inspection.
    */
-  log(inspect) {
-    print(
-      "\n",
-      ansi.styles(["bold", "red"]),
-      this.name,
-      ":",
-      ansi.style.reset,
-      "\n",
-      ansi.style.red,
-      this.description?.split(".").map((line) => line.trim()).join("\n"),
-      ansi.style.reset,
-      "\n",
-      inspect ? this.body : "",
-      cursorShow,
+  log() {
+    STD.err.puts(
+      `${
+        ansi.styles(["bold", "red"])
+      }  ${this.name}:${ansi.style.reset}\n${ansi.style.red}  ${this.description}${ansi.style.reset}\n\n${
+        this.body ?? ""
+      }\n`,
     );
   }
 };
 
 globalThis.execAsync = execAsync;
-
-const handleError = (error, blockName) => {
-  if (error instanceof SystemError || (error === EXIT)) throw error;
-  if (error.stackTrace) {
-    error.stackTrace.push(blockName ?? "anonymous");
-  } else {
-    error.stackTrace = [blockName];
-  }
-  throw error;
-};
-
-/**
- * @param {Function} cb - Callback
- * @param {string} blockName - Error message / Block name
- * @returns {Promise<Error | SystemError>}
- */
-globalThis.catchAsyncError = async (cb, blockName) => {
-  try {
-    return await cb();
-  } catch (error) {
-    handleError(error, blockName);
-  }
-};
-
-globalThis.catchError = (cb, blockName) => {
-  try {
-    return cb();
-  } catch (error) {
-    handleError(error, blockName);
-  }
-};
 
 globalThis.EXIT = "exit";
