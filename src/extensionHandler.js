@@ -62,11 +62,9 @@ async function handleExtensionThread(data) {
           break;
         case "error": {
           abortWorker();
-          const [fileName, cause] = ev.data;
           reject(
             new Error(
-              `Error in "${fileName}"`,
-              { body: cause },
+              ev.data,
             ),
           );
           break;
@@ -78,7 +76,7 @@ async function handleExtensionThread(data) {
             new SystemError(
               name,
               description,
-              JSON.parse(body),
+              body,
             ),
           );
         }

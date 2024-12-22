@@ -44,10 +44,8 @@ const startWork = async (data) => {
         })
         : parent.postMessage({
           type: "error",
-          data: [
-            scriptPath,
-            JSON.stringify(status),
-          ],
+          data:
+            `${status.constructor.name}: ${status.message}\n${status.stack}`,
         });
     }
   }

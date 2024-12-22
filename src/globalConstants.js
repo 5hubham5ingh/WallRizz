@@ -35,9 +35,6 @@ globalThis.SystemError = class SystemError extends Error {
     this.name = name;
     this.description = description;
     this.body = body;
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, SystemError);
-    }
   }
 
   /**
@@ -49,7 +46,9 @@ globalThis.SystemError = class SystemError extends Error {
     STD.err.puts(
       `${
         ansi.styles(["bold", "red"])
-      }  ${this.name}:${ansi.style.reset}\n${ansi.style.red}  ${this.description}${ansi.style.reset}\n\n`,
+      }  ${this.name}:${ansi.style.reset}\n${ansi.style.red}  ${this.description}${ansi.style.reset}\n\n${
+        this.body ?? ""
+      }\n`,
     );
   }
 };
