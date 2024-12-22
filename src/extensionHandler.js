@@ -10,87 +10,81 @@ import utils from "./utils.js";
  * @returns {Promise<any>} A promise that resolves with the result or rejects with error from the worker script.
  */
 export default async function extensionHandler(data) {
-  return await catchAsyncError(async () => {
-    if (USER_ARGUMENTS.processLimit == 1) {
-      return await handleExtensionPromise(data);
-    }
+  if (USER_ARGUMENTS.processLimit == 1) {
+    return await handleExtensionPromise(data);
+  }
 
-    return await handleExtensionThread(data);
-  }, "workerPromise");
+  return await handleExtensionThread(data);
 }
 
 async function handleExtensionPromise(data) {
-  return await catchAsyncError(async () => {
-    const { scriptPath, scriptMethods, args } = data;
-    const exports = await import(scriptPath);
+  const { scriptPath, scriptMethods, args } = data;
+  const exports = await import(scriptPath);
 
-    for (const [functionName, cacheDir] of Object.entries(scriptMethods)) {
-      const cb = exports?.[functionName];
-      if (!cb) {
-        throw SystemError(
-          "Error in " + scriptPath,
-          "No function named " + functionName + " found.",
-        );
-      }
-      try {
-        const result = await cb(...args);
-        if (!!result && !!cacheDir) utils.writeFile(result, cacheDir);
-      } catch (status) {
-        if (status === EXIT) continue;
-
-        throw status;
-      }
+  for (const [functionName, cacheDir] of Object.entries(scriptMethods)) {
+    const cb = exports?.[functionName];
+    if (!cb) {
+      throw SystemError(
+        "Error in " + scriptPath,
+        "No function named " + functionName + " found.",
+      );
     }
-  }, "handleExtensionPromise");
+    try {
+      const result = await cb(...args);
+      if (!!result && !!cacheDir) utils.writeFile(result, cacheDir);
+    } catch (status) {
+      if (status === EXIT) continue;
+
+      throw status;
+    }
+  }
 }
 
 async function handleExtensionThread(data) {
-  return await catchAsyncError(async () => {
-    return await new Promise((resolve, reject) => {
-      // When process limit is set greater than one.
-      const worker = new OS.Worker(
-        "./extensionHandlerWorker.js",
-      );
-      const abortWorker = () => {
-        worker.postMessage({ type: "abort" });
-        worker.onmessage = null;
-      };
+  return await new Promise((resolve, reject) => {
+    // When process limit is set greater than one.
+    const worker = new OS.Worker(
+      "./extensionHandlerWorker.js",
+    );
+    const abortWorker = () => {
+      worker.postMessage({ type: "abort" });
+      worker.onmessage = null;
+    };
 
-      worker.postMessage({ type: "start", data: data });
+    worker.postMessage({ type: "start", data: data });
 
-      worker.onmessage = (e) => {
-        const ev = e.data;
-        switch (ev.type) {
-          case "success":
-            abortWorker();
-            resolve(ev.data);
-            break;
-          case "error": {
-            abortWorker();
-            const [fileName, cause] = ev.data;
-            reject(
-              new Error(
-                `Error in "${fileName}"`,
-                { body: cause },
-              ),
-            );
-            break;
-          }
-          case "systemError": {
-            abortWorker();
-            const [name, description, body] = ev.data;
-            reject(
-              new SystemError(
-                name,
-                description,
-                JSON.parse(body),
-              ),
-            );
-          }
+    worker.onmessage = (e) => {
+      const ev = e.data;
+      switch (ev.type) {
+        case "success":
+          abortWorker();
+          resolve(ev.data);
+          break;
+        case "error": {
+          abortWorker();
+          const [fileName, cause] = ev.data;
+          reject(
+            new Error(
+              `Error in "${fileName}"`,
+              { body: cause },
+            ),
+          );
+          break;
         }
-      };
-    });
-  }, "handleExtensionThread");
+        case "systemError": {
+          abortWorker();
+          const [name, description, body] = ev.data;
+          reject(
+            new SystemError(
+              name,
+              description,
+              JSON.parse(body),
+            ),
+          );
+        }
+      }
+    };
+  });
 }
 
 export async function testExtensions() {

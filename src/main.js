@@ -17,11 +17,11 @@ class WallRizz {
 
   async run() {
     try {
-      OS.ttySetRaw();
       this.handleShowKeymaps();
       await this.handleExtensionTest();
       await this.handleThemeExtensionScriptDownload();
       await this.handleWallpaperHandlerScriptDownload();
+      OS.ttySetRaw(); // enable raw mode for grid UI
       await this.handleWallpaperBrowsing();
       await this.handleWallpaperSetter();
     } catch (status) {
@@ -164,7 +164,7 @@ class WallRizz {
           ),
         [argNames.setIntervalCallback]: arg
           .str("")
-          .env("WW_CB")
+          .env("WR_CB")
           .val("JavaScript IIFE")
           .cust(STD.evalScript)
           .desc(
@@ -180,8 +180,8 @@ class WallRizz {
           .min(1)
           .desc("Number of execution threads used. (default: auto)"),
         [argNames.inspection]: arg
-          .flag(false)
-          .desc("Enable verbose error log for inspection."),
+          .flag(true)
+          .desc("Enable log for inspection."),
         [argNames.test]: arg
           .flag()
           .desc("Test extensions"),
@@ -258,53 +258,41 @@ class WallRizz {
 
   async handleThemeExtensionScriptDownload() {
     if (!USER_ARGUMENTS.downloadThemeExtensionScripts) return;
-    return await catchAsyncError(async () => {
-      const downloadManager = new ThemeExtensionScriptsDownloadManager();
-      await downloadManager.init();
-    }, "handleThemeExtensionScriptDownload");
+    const downloadManager = new ThemeExtensionScriptsDownloadManager();
+    await downloadManager.init();
   }
 
   async handleWallpaperHandlerScriptDownload() {
     if (!USER_ARGUMENTS.downloadWallpaperDaemonHandlerScript) return;
-    return await catchAsyncError(async () => {
-      const downloadManager = new WallpaperDaemonHandlerScriptDownloadManager();
-      await downloadManager.init();
-    }, "handleWallpaperHandlerScriptDownload");
+    const downloadManager = new WallpaperDaemonHandlerScriptDownloadManager();
+    await downloadManager.init();
   }
 
   async handleWallpaperBrowsing() {
     if (!USER_ARGUMENTS.browseWallpaperOnline) return;
 
-    return await catchAsyncError(async () => {
-      const wallpaperDownloadManager = new WallpaperDownloadManager();
-      await wallpaperDownloadManager.init();
-    }, "handleWallpaperBrowsing");
+    const wallpaperDownloadManager = new WallpaperDownloadManager();
+    await wallpaperDownloadManager.init();
   }
 
   async handleWallpaperSetter() {
-    return await catchAsyncError(async () => {
-      const wallpaperSetter = new WallpaperSetter();
-      await wallpaperSetter.init();
-    }, "handleWallpaperSetter");
+    const wallpaperSetter = new WallpaperSetter();
+    await wallpaperSetter.init();
   }
 
   handleShowKeymaps() {
-    catchError(() => {
-      if (!USER_ARGUMENTS.showKeyMap) return;
-      UserInterface.printKeyMaps();
-    }, "handleShowKeymaps");
+    if (!USER_ARGUMENTS.showKeyMap) return;
+    UserInterface.printKeyMaps();
   }
 
   handleExecutionStatus(status) {
     if (status === EXIT) STD.exit(0);
     if (status instanceof SystemError) {
       status.log(USER_ARGUMENTS.inspection);
-    } else if (USER_ARGUMENTS.inspection) {
-      const stackTrace = status?.stackTrace?.map((stack) => {
-        return " at " + stack;
-      }).join("\n");
-      print(status, "\n", stackTrace);
-    }
+    } else {STD.err.puts(
+        `${status.constructor.name}: ${status.message}\n${status.stack}`,
+      );}
+    STD.exit(1);
   }
 }
 
