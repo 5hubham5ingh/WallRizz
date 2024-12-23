@@ -192,7 +192,7 @@ export default class WallpaperSetter {
   }
 
   getWallpaperPath(wallpaper) {
-    USER_ARGUMENTS.wallpapersDirectory.concat(wallpaper.name);
+    return USER_ARGUMENTS.wallpapersDirectory.concat(wallpaper.name);
   }
 
   isSupportedImageFormat(name) {
