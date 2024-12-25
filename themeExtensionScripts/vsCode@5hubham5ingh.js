@@ -1,8 +1,8 @@
 /*
  For:            Visual studio code
  Author:         https://github.com/5hubham5ingh
- Prerequisite:   Installed and enabled WallWiz-theme in vscode from vscode marketplace.
- Version:        0.0.1
+ Prerequisite:   Installed and enabled WallRizz-theme in vscode from vscode marketplace.
+ Version:        1.0.0
  */
 
 function generateTheme(colors, isDark) {
@@ -521,7 +521,7 @@ function setTheme(
 ) {
   const config = STD.loadFile(themeConfPath);
   const themeDir =
-    "/.vscode/extensions/ssdev.wallwiz-theme-0.0.2/themes/wallwiz-theme.json";
+    "/.vscode/extensions/ssdev.wallrizz-theme-0.0.6/themes/wallrizz-theme.json";
   const vscodeThemeFile = STD.open(
     HOME_DIR.concat(themeDir),
     "w",
