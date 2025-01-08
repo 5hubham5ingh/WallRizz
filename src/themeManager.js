@@ -94,14 +94,14 @@ class Theme {
             args: all,
           }),
 
-        getThemes: async (colors, cacheDirs) =>
+        getThemes: async (colors, wallpaperPath, cacheDirs) =>
           await workerPromise({
             scriptPath: extensionPath,
             scriptMethods: {
               getDarkThemeConf: cacheDirs[0],
               getLightThemeConf: cacheDirs[1],
             },
-            args: [colors],
+            args: [colors, wallpaperPath],
           }),
       };
       this.themeExtensionScripts[fileName] = extensionScript;
@@ -151,14 +151,18 @@ class Theme {
             `Generating theme config for wallpaper: "${wallpaper.name}" using "${scriptName}".`,
           );
           return themeHandler
-            .getThemes(colours, [
-              `${this.appThemeCacheDir[scriptName]}${
-                this.getThemeName(wallpaper.uniqueId, "dark")
-              }`,
-              `${this.appThemeCacheDir[scriptName]}${
-                this.getThemeName(wallpaper.uniqueId, "light")
-              }`,
-            ]);
+            .getThemes(
+              colours,
+              USER_ARGUMENTS.wallpapersDirectory.concat(wallpaper.name),
+              [
+                `${this.appThemeCacheDir[scriptName]}${
+                  this.getThemeName(wallpaper.uniqueId, "dark")
+                }`,
+                `${this.appThemeCacheDir[scriptName]}${
+                  this.getThemeName(wallpaper.uniqueId, "light")
+                }`,
+              ],
+            );
         };
 
         promises.push(generateThemeConfig);
