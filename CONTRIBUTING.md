@@ -59,6 +59,13 @@ If you maintain a GitHub repository for wallpaper collections, you can add it to
 1. [**Aesthetic Wallpapers by D3Ext**](https://github.com/D3Ext/aesthetic-wallpapers)  
 2. [**Aesthetic Wallpapers by ronit18**](https://github.com/ronit18/Asthetic-Wallpapers)  
 3. [**dh-wallpapers**](https://github.com/danihek/dh-wallpapers)
+4. [**Axenide's collection**](https://github.com/Axenide/wallpapers)
+
+In order to browse wallpapers from these repositories, run
+```bash
+WallRizz -u "url1 ; url2 ; url3"
+```
+**Note:** You should add a Github api key in WallRizz otherwise github limits api calls to fetch and preview wallpapers from the repositories.
 
 Feel free to contribute additional wallpaper repositories by creating a pull request!
 
