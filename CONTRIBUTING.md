@@ -60,6 +60,7 @@ If you maintain a GitHub repository for wallpaper collections, you can add it to
 2. [**Aesthetic Wallpapers by ronit18**](https://github.com/ronit18/Asthetic-Wallpapers)  
 3. [**dh-wallpapers**](https://github.com/danihek/dh-wallpapers)
 4. [**Axenide's collection**](https://github.com/Axenide/wallpapers)
+5. [**JoydeepMallick's collection**](https://github.com/JoydeepMallick/Wallpapers.git)
 
 In order to browse wallpapers from these repositories, run
 ```bash
