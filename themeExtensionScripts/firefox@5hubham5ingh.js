@@ -2,7 +2,7 @@
  For:            Firefox browser
  Author:         https://github.com/5hubham5ingh
  Version:        0.0.1
- Prerequisite:   Firefox add-on https://github.com/5hubham5ingh/wallrizz-firefox-extension
+ Prerequisite:   Firefox addon Foxpanel https://github.com/5hubham5ingh/foxpanel
 */
 
 export function getDarkThemeConf(colors) {
