@@ -1,0 +1,172 @@
+:root {
+  --min-width: 30%;
+}
+
+body {
+  background: transparent;
+  height: 100vh;
+  margin: 0;
+}
+
+.image-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-grid div {
+  height: auto;
+  max-width: var(--min-width);
+  object-fit: cover;
+}
+
+/* Hide the actual checkbox */
+#settings-toggle {
+  display: none;
+}
+
+/* Style for the button/label */
+#setting {
+  position: fixed;
+  right: 0.5rem;
+  top: 0.5rem;
+  font-size: 3rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 100%;
+  background-color: black;
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  z-index: 1;
+}
+
+/* The plus symbol */
+#setting::before {
+  content: "+";
+  transition: transform 0.3s ease;
+}
+
+/* When checkbox is checked, rotate the plus symbol 45 degrees to make it look like × */
+#settings-toggle:checked + #setting::before {
+  transform: rotate(45deg);
+}
+
+.settings-panel {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(50px);
+  color: white;
+  border-radius: 8px;
+  border: 0.1rem solid white;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 1rem;
+  right: 2rem;
+  bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  width: 0;
+  height: 0;
+  overflow-y: auto;
+
+  visibility: collapse;
+  pointer-events: none;
+  transition: all 0.5s ease-in-out;
+}
+
+#settings-toggle:checked ~ .settings-panel {
+  visibility: visible;
+  pointer-events: auto;
+  width: 30%;
+  height: auto;
+}
+
+section h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.setting-group {
+  margin-bottom: 20px;
+}
+
+.setting-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.setting-group input[type="range"] {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+#min-width-value {
+  font-size: 0.9rem;
+  color: white;
+}
+
+.setting-group input[type="text"] {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 70%;
+}
+
+.setting-group button {
+  margin: 0 1rem;
+  background-color: #7fc9e9;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 25%;
+  height: 2rem;
+}
+
+.setting-group button:hover {
+  background-color: #4a90e2; /* Added hover state */
+}
+
+#filter-list {
+  padding-left: 5%;
+  li {
+    padding: 1% 0;
+    margin: 0;
+  }
+}
+
+.github-link {
+  text-align: center;
+  right: 5%;
+  top: 0;
+}
+
+.github-link a {
+  display: inline-flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.github-link a:hover {
+  color: #4a90e2;
+}
+
+.github-icon {
+  margin-right: 8px;
+}
