@@ -50,25 +50,7 @@ You can contribute wallpapers in two ways:
      **Example:** `sunset_over_mountains_skyline_john_doe.jpg`  
 
 2. **Share Your Wallpaper Repository:**  
-   - If you maintain a separate wallpaper collection, list the URL of your repository in the **Wallpaper Repositories** section below.
-
-## Wallpaper Repositories
-
-If you maintain a GitHub repository for wallpaper collections, you can add it to this list for others to explore:
-
-1. [**Aesthetic Wallpapers by D3Ext**](https://github.com/D3Ext/aesthetic-wallpapers)  
-2. [**Aesthetic Wallpapers by ronit18**](https://github.com/ronit18/Asthetic-Wallpapers)  
-3. [**dh-wallpapers**](https://github.com/danihek/dh-wallpapers)
-4. [**Axenide's collection**](https://github.com/Axenide/wallpapers)
-5. [**JoydeepMallick's collection**](https://github.com/JoydeepMallick/Wallpapers.git)
-
-In order to browse wallpapers from these repositories, run
-```bash
-WallRizz -u "url1 ; url2 ; url3"
-```
-**Note:** You should add a Github api key in WallRizz otherwise github limits api calls to fetch and preview wallpapers from the repositories.
-
-Feel free to contribute additional wallpaper repositories by creating a pull request!
+   - If you maintain a separate wallpaper collection, list the URL of your repository in the [Wallpaper Repositories](https://github.com/5hubham5ingh/WallRizz/wiki/Home/_edit#wallpaper-repositories) list.
 
 ## Naming Conventions
 
