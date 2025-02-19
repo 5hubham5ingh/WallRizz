@@ -5,7 +5,7 @@
 
 ---
 **[<kbd> <br> Workflow <br> </kbd>](https://github.com/5hubham5ingh/WallRizz/wiki#workflow-overview)** 
-**[<kbd> <br> Wallpapers <br> </kbd>](https://github.com/5hubham5ingh/WallRizz/blob/main/CONTRIBUTING.md#wallpaper-repositories)** 
+**[<kbd> <br> Wallpapers <br> </kbd>](https://github.com/5hubham5ingh/WallRizz/wiki#online-wallpaper-browsing)** 
 
 **[<kbd> <br> Install <br> </kbd>](https://github.com/5hubham5ingh/WallRizz/wiki/1.-Installation)** 
 **[<kbd> <br> Setup <br> </kbd>](https://github.com/5hubham5ingh/WallRizz/wiki/2.-Setup)** 
