@@ -118,7 +118,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (entries.some((entry) => entry.isIntersecting)) {
           loadMoreImages();
 
-          console.count("adding more imges");
           // Update observer to watch the new last element
           updateObservedElement();
         }
