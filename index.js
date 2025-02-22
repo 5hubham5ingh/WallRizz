@@ -47,9 +47,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const img = document.createElement("img");
     img.src = url;
     img.alt = "Wallpaper";
-    img.style.maxWidth = "100%"; 
+    img.style.maxWidth = "100%";
     img.style.maxHeight = "100%";
-    img.style.display = "none"; 
+    img.style.display = "none";
 
     img.onload = () => {
       img.style.display = "block";
@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     img.onerror = () => {
       img.alt = "Failed to load image";
-      img.style.display = "block"; 
+      img.style.display = "block";
     };
 
     container.appendChild(img);
@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to load initial set of images
   async function loadWallpapers(
-    filter = localStorage.getItem("wallpaper-filter")
+    filter = localStorage.getItem("wallpaper-filter"),
   ) {
     try {
       // Fetch all image URLs
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
         (
           await Promise.all(WallpaperRepoUrls.map((url) => fetchImageUrls(url)))
         ).flat(),
-        filter ?? ""
+        filter ?? "",
       );
 
       if (imageUrls.length === 0) {
@@ -125,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         rootMargin: "100px", // Load images before they come into view
         threshold: 0.1,
-      }
+      },
     );
 
     updateObservedElement();
@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (savedMinWidth) {
       document.documentElement.style.setProperty(
         "--min-width",
-        `${savedMinWidth}%`
+        `${savedMinWidth}%`,
       );
       minWidthSlider.value = savedMinWidth;
     }
@@ -244,7 +244,7 @@ function isCamelCase(text, index) {
   return /[a-z]/.test(text[index - 1]) && /[A-Z]/.test(text[index]);
 }
 
-function fuzzyFind(array, query ) {
+function fuzzyFind(array, query) {
   if (!query) return array;
 
   const normalizedQuery = normalizeText(query);
@@ -302,7 +302,7 @@ function fuzzyFind(array, query ) {
         } else {
           dp[i][j] = Math.max(
             dp[i - 1][j] - SCORE.GAP_PENALTY,
-            dp[i][j - 1] - SCORE.GAP_PENALTY
+            dp[i][j - 1] - SCORE.GAP_PENALTY,
           );
         }
       }

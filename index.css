@@ -1,5 +1,8 @@
 :root {
   --min-width: 30%;
+  @media only screen and (orientation: portrait) {
+    --min-width: 100%;
+  }
 }
 
 body {
@@ -89,6 +92,10 @@ body {
   pointer-events: auto;
   width: 30%;
   height: auto;
+
+  @media only screen and (orientation: portrait) {
+    width: 70%;
+  }
 }
 
 section h2 {
