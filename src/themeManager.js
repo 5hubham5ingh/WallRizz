@@ -174,10 +174,10 @@ class Theme {
 
   /**
    * Set the theme for a given wallpaper
-   * @param {string} wallpaperName - Name of the wallpaper
+   * @param {string} wallpaperId - Name of the wallpaper
    */
-  async setThemes(wallpaperName) {
-    const themeName = this.getThemeName(wallpaperName);
+  async setThemes(wallpaperId, wallpaperName) {
+    const themeName = this.getThemeName(wallpaperId);
 
     const getTaskPromiseCallBacks = Object.entries(
       this.themeExtensionScripts,
@@ -190,7 +190,10 @@ class Theme {
         const [, err] = OS.stat(cachedThemePath);
 
         if (err === 0) {
-          await themeHandler.setTheme(cachedThemePath);
+          await themeHandler.setTheme(
+            cachedThemePath,
+            USER_ARGUMENTS.wallpapersDirectory.concat(wallpaperName),
+          );
         }
       },
     );
