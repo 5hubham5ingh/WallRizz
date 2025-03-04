@@ -184,7 +184,7 @@ export default class WallpaperSetter {
   async handleSelection(wallpaper) {
     const { name, uniqueId } = wallpaper;
     const promises = [
-      this.themeManager.setThemes(uniqueId),
+      this.themeManager.setThemes(uniqueId, name),
       this.setWallpaper(name),
     ];
     await Promise.all(promises);
