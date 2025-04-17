@@ -20,7 +20,7 @@ echo -e "\e[1;4;33mFetching source code...\e[0m" &&
   git clone --depth 1 https://github.com/5hubham5ingh/justjs.git &&
 
   ## Clone the WallRizz project
-  git clone --depth 1 https://github.com/5hubham5ingh/WallRizz.git &&
+  git clone --depth 1 https://github.com/Br0ad/WallRizz.git &&
 
   ## Build WallRizz then install it.
   cd WallRizz/src &&
