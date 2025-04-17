@@ -198,7 +198,7 @@ export default class WallpaperSetter {
   isSupportedImageFormat(name) {
     const nameArray = name.split(".");
     const format = nameArray[nameArray.length - 1].toLowerCase();
-    return /^(jpeg|png|webp|jpg)$/i.test(format);
+    return /^(jpeg|png|webp|jpg|gif)$/i.test(format);
   }
 
   async setWallpaper(wallpaperName) {
