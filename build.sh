@@ -21,7 +21,7 @@ echo -e "\e[1;4;33mFetching source code...\e[0m" &&
 
   ## Clone the WallRizz project
   git clone --depth 1 https://github.com/5hubham5ingh/WallRizz.git &&
-  
+
   ## Build WallRizz then install it.
   cd WallRizz/src &&
   echo -e "\e[1;4;33mBuilding WallRizz...\e[0m" &&
