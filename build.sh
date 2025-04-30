@@ -9,25 +9,33 @@
      cd quickjs &&
      make &&
      sudo make install &&
-     cd .. 
+     cd ..
+   else
+     echo "\"quickjs\" found, skipping \"quickjs\" download and installation."
   fi &&
 
   ## Fetch the required library.
-  if ! [ -d "qjs-ext-lib-0.12.4" ]; then
+  if ! [ -d "qjs-ext-lib" ]; then
      curl -L -o out.zip https://github.com/ctn-malone/qjs-ext-lib/archive/refs/tags/0.12.4.zip &&
      unzip out.zip &&
      mv qjs-ext-lib-0.12.4 qjs-ext-lib &&
      rm out.zip
+  else
+     echo "\"qjs-ext-lib\" found, skipping \"qjs-ext-lib\" download and installation."
   fi &&
 
   ## Fetch helper scripts
   if ! [ -d "justjs" ]; then
-     git clone --depth 1 https://github.com/5hubham5ingh/justjs.git  
+     git clone --depth 1 https://github.com/5hubham5ingh/justjs.git
+  else
+     echo "\"justjs\" found, skipping \"justjs\" download."
   fi &&
 
   ## Clone the WallRizz project
   if ! [ -d "WallRizz" ]; then
      git clone --depth 1 https://github.com/5hubham5ingh/WallRizz.git
+  else
+     echo "\"WallRizz\" found, skipping \"WallRizz\" download."
   fi &&
 
   ## Build WallRizz then install it.
