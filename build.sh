@@ -3,24 +3,40 @@
 # Build script for WallRizz
 
 ## Fetch the QuickJS source code, then build and install the compiler and interpreter in the system.
-echo -e "\e[1;4;33mFetching source code...\e[0m" &&
-  git clone --depth 1 https://github.com/bellard/quickjs.git &&
-  cd quickjs &&
-  make &&
-  sudo make install &&
-  cd .. &&
+  if ! [ -d "quickjs" ]; then
+     echo -e "\e[1;4;33mFetching source code...\e[0m" &&
+     git clone --depth 1 https://github.com/bellard/quickjs.git &&
+     cd quickjs &&
+     make &&
+     sudo make install &&
+     cd ..
+   else
+     echo "\"quickjs\" found, skipping \"quickjs\" download and installation."
+  fi &&
 
   ## Fetch the required library.
-  curl -L -o out.zip https://github.com/ctn-malone/qjs-ext-lib/archive/refs/tags/0.12.4.zip &&
-  unzip out.zip &&
-  mv qjs-ext-lib-0.12.4 qjs-ext-lib &&
-  rm out.zip &&
+  if ! [ -d "qjs-ext-lib" ]; then
+     curl -L -o out.zip https://github.com/ctn-malone/qjs-ext-lib/archive/refs/tags/0.12.4.zip &&
+     unzip out.zip &&
+     mv qjs-ext-lib-0.12.4 qjs-ext-lib &&
+     rm out.zip
+  else
+     echo "\"qjs-ext-lib\" found, skipping \"qjs-ext-lib\" download and installation."
+  fi &&
 
   ## Fetch helper scripts
-  git clone --depth 1 https://github.com/5hubham5ingh/justjs.git &&
+  if ! [ -d "justjs" ]; then
+     git clone --depth 1 https://github.com/5hubham5ingh/justjs.git
+  else
+     echo "\"justjs\" found, skipping \"justjs\" download."
+  fi &&
 
   ## Clone the WallRizz project
-  git clone --depth 1 https://github.com/5hubham5ingh/WallRizz.git &&
+  if ! [ -d "WallRizz" ]; then
+     git clone --depth 1 https://github.com/5hubham5ingh/WallRizz.git
+  else
+     echo "\"WallRizz\" found, skipping \"WallRizz\" download."
+  fi &&
 
   ## Build WallRizz then install it.
   cd WallRizz/src &&
