@@ -44,10 +44,8 @@ globalThis.SystemError = class SystemError extends Error {
    */
   log() {
     STD.err.puts(
-      `${
-        ansi.styles(["bold", "red"])
-      }  ${this.name}:${ansi.style.reset}\n${ansi.style.red}  ${this.description}${ansi.style.reset}\n\n${
-        this.body ?? ""
+      `\n${ansi.styles(["bold", "red"])
+      }  ${this.name}:${ansi.style.reset}\n${ansi.style.red}  ${this.description}${ansi.style.reset}\n\n${this.body ?? ""
       }\n`,
     );
   }

@@ -71,6 +71,9 @@ export type UserArguments = {
 
   /** Test entensions */
   test: boolean;
+
+  /** Run update **/
+  update: boolean
 };
 
 /**

@@ -9,6 +9,7 @@ import WallpaperSetter from "./wallpapersManager.js";
 import { UserInterface } from "./userInterface.js";
 import { ansi } from "../../justjs/ansiStyle.js";
 import { testExtensions } from "./extensionHandler.js";
+import utils from "./utils.js";
 
 class WallRizz {
   constructor() {
@@ -18,6 +19,7 @@ class WallRizz {
   async run() {
     try {
       this.handleShowKeymaps();
+      await this.handleRunUpdate();
       await this.handleExtensionTest();
       await this.handleThemeExtensionScriptDownload();
       await this.handleWallpaperHandlerScriptDownload();
@@ -65,6 +67,7 @@ class WallRizz {
       processLimit: "--plimit",
       inspection: "--inspection",
       test: "--test",
+      update: "--update"
     };
 
     // Define and parse command-line arguments using the 'arg' library
@@ -185,6 +188,9 @@ class WallRizz {
         [argNames.test]: arg
           .flag()
           .desc("Test extensions"),
+        [argNames.update]: arg
+          .flag()
+          .desc("Update WallRizz"),
         "-d": argNames.wallpapersDirectory,
         "-r": argNames.setRandomWallpaper,
         "-s": argNames.imageSize,
@@ -239,7 +245,7 @@ class WallRizz {
             ansi.style.reset,
           ),
       ))
-      .ver("1.2.0")
+      .ver("1.3.0")
       .parse();
 
     // Convert parsed arguments to a more convenient object format
@@ -285,13 +291,21 @@ class WallRizz {
     UserInterface.printKeyMaps();
   }
 
+  async handleRunUpdate() {
+    if (!USER_ARGUMENTS.update) return;
+    await utils.checkForUpdate()
+    throw EXIT;
+  }
+
   handleExecutionStatus(status) {
     if (status === EXIT) STD.exit(0);
     if (status instanceof SystemError) {
       status.log(USER_ARGUMENTS.inspection);
-    } else {STD.err.puts(
+    } else {
+      STD.err.puts(
         `${status.constructor.name}: ${status.message}\n${status.stack}`,
-      );}
+      );
+    }
     STD.exit(1);
   }
 }
