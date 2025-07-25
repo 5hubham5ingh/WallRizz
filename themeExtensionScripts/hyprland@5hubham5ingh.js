@@ -1,7 +1,7 @@
 /*
  For:            Hyprland, https://hyprland.org
  Author:         https://github.com/5hubham5ingh
- Version:        0.0.2
+ Version:        0.0.3
  Prerequisite:   Edit the ~/.config/hypr/hyprland.conf file to add this line at the bottom-
                  source = ~/.config/hypr/WallRizzTheme.conf
 */
@@ -80,7 +80,7 @@ function createHyprlandTheme(colors, isDark = true) {
       activeBorder2.toHexString(),
     ],
     inactiveBorder: inactiveBorder.toHexString(),
-    shadow: backgroundSource.setAlpha(0.4).toHexString(),
+    shadow: backgroundSource.clone().setAlpha(0.4).toHex8String(),
     groupColors: {
       activeGroup: activeBorder1.toHexString(),
       inactiveGroup: activeBorder2.toHexString(),
@@ -93,26 +93,18 @@ function createHyprlandTheme(colors, isDark = true) {
 function createHyprlandConfig(theme) {
   return `
 general {
-  col.active_border = rgb(${theme.activeBorder[0].substring(1)}) rgb(${
-    theme.activeBorder[1].substring(1)
-  }) 45deg
+  col.active_border = rgb(${theme.activeBorder[0].substring(1)}) rgb(${theme.activeBorder[1].substring(1)
+    }) 45deg
   col.inactive_border = rgb(${theme.inactiveBorder.substring(1)})
-}
-
-decoration {
-  col.shadow = rgb(${theme.shadow.substring(1)})
-  col.shadow_inactive = rgb(${theme.shadow.substring(1)})
 }
 
 group {
   col.border_active = rgb(${theme.groupColors.activeGroup.substring(1)})
   col.border_inactive = rgb(${theme.groupColors.inactiveGroup.substring(1)})
-  col.border_locked_active = rgb(${
-    theme.groupColors.lockedActiveGroup.substring(1)
-  })
-  col.border_locked_inactive = rgb(${
-    theme.groupColors.lockedInactiveGroup.substring(1)
-  })
+  col.border_locked_active = rgb(${theme.groupColors.lockedActiveGroup.substring(1)
+    })
+  col.border_locked_inactive = rgb(${theme.groupColors.lockedInactiveGroup.substring(1)
+    })
 
   groupbar {
     text_color = rgb(${theme.foreground.substring(1)})
