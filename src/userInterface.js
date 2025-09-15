@@ -11,6 +11,7 @@ import { handleKeysPress, keySequences } from "../../justjs/terminal.js";
 import utils from "./utils.js";
 import { Theme } from "./themeManager.js";
 import { ProcessSync } from "../../qjs-ext-lib/src/process.js";
+import Fzf from "../../justjs/fzf.js"
 
 /**
  * @typedef {import('./types.d.ts').WallpapersList} WallpapersList
@@ -126,26 +127,22 @@ class UserInterface {
       .then((_) =>
         "--preview='kitty icat --clear --transfer-mode=memory --stdin=no --scale-up --place=${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}@0x0 "
       ).catch((_) =>
-        `--preview='timg -U -W --clear -pk -g${parseInt(width * 6.5 / 10)}x${
-          parseInt(height)
+        `--preview='timg -U -W --clear -pk -g${parseInt(width * 6.5 / 10)}x${parseInt(height)
         } `
       );
 
-    const fzfArgs = [
-      "fzf", // Launch fzf command
-      "--color=16,current-bg:-1", // Set colors for background and border
-      "--read0", // Use null-terminated strings for input
-      '--delimiter=" "', // Set delimiter for separating data
-      ...["--with-nth", "1"], // Configure last columns to display in the fuzzy search
-      icat + // image previewer
-      this.wallpapersDir +
-      "`echo -e {} | head -n 2 | tail -n 1`'", // wallpaper name
-      '--preview-window="wrap,border-none"',
-      "--no-info",
-      "--separator=' '",
-      "--bind='focus:transform-header(echo -e {} | tail -n +3)'", // print wallpaper color pallete
-      "--layout=reverse",
-    ];
+    const fzf = new Fzf()
+    fzf.color("16,current-bg:-1")
+      .read0()
+      .delimiter("' '")
+      .withNth("1")
+      .custom(icat + this.wallpapersDir + "`echo -e {} | head -n 2 | tail -n 1`'")
+      .previewWindow("wrap,border-none")
+      .noInfo()
+      .separator("' '")
+      .bind("'focus:transform-header(echo -e {} | tail -n +3)'")
+      .layout("reverse")
+      .withShell("'/usr/bin/bash -c'")
 
     // Calculate the length of the palette view
     const maxLineLength = Math.floor(width / 2);
@@ -179,16 +176,17 @@ class UserInterface {
       .join("\0");
 
     const previewer = new ProcessSync(
-      fzfArgs, // Arguments for the fzf command
+      fzf.toString(),
       {
         input: fzfInput, // Pass the formatted options as input to fzf
-        useShell: true, // Allow the use of shell commands in the fzf command
+        useShell: true
       },
     );
 
     try {
       previewer.run();
     } catch (error) {
+      print(error)
       throw new SystemError(
         "Failed to run fzf.",
         "Make sure fzf is installed and available in the system.",
@@ -197,6 +195,7 @@ class UserInterface {
     }
 
     if (!previewer.success) {
+      STD.exit()
       throw new SystemError("Error", previewer.stderr || "No item selected.");
     }
 
@@ -353,9 +352,8 @@ class UserInterface {
     const xBorderDown = " ╰" + "─".repeat(this.containerWidth - 1) + "╯";
     const newLine = cursorMove(-1 * (this.containerWidth + 2), 1);
     const yBorder = ` │${" ".repeat(this.containerWidth - 1)}│${newLine}`;
-    const border = `${OO}${xBorderUp}${newLine}${
-      yBorder.repeat(this.containerHeight - 1)
-    }${xBorderDown}${OO}`;
+    const border = `${OO}${xBorderUp}${newLine}${yBorder.repeat(this.containerHeight - 1)
+      }${xBorderDown}${OO}`;
     print(cursorTo(0, 0), eraseDown, ansi.style.brightWhite, border);
   }
 

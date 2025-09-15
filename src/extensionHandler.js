@@ -1,5 +1,6 @@
 import { curlRequest } from "../../qjs-ext-lib/src/curl.js";
 import utils from "./utils.js";
+import Fzf from "../../justjs/fzf.js"
 
 /**
  * @description - Promisify the extensionScriptHandlerWorker.
@@ -92,15 +93,14 @@ export async function testExtensions() {
   try {
     extensions = await import(cwd.concat("/main.js"));
   } catch (_) {
-    const createExtensionTemplate = await execAsync([
-      "fzf",
-      "--header=\nFailed to load main.js for testing.\nCreate a new extension template in current directory?\n\n",
-      "--color=16,current-bg:-1", // Set colors for background and border
-      "--no-info",
-      "--layout=reverse",
-      "--highlight-line",
-      "--header-first",
-    ], { input: "Yes\nNo" });
+    const fzf = new Fzf()
+    fzf.header("\nFailed to load main.js for testing.\nCreate a new extension template in current directory?\n\n")
+      .color("16,current-bg:-1")
+      .noInfo()
+      .layout("reverse")
+      .highlightLine()
+      .headerFirst()
+    const createExtensionTemplate = await execAsync(fzf.toString(), { input: "Yes\nNo" });
 
     if (createExtensionTemplate === "Yes") {
       utils.log("Fetching extensions template...");

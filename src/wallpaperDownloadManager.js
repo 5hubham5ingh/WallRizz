@@ -2,6 +2,7 @@ import { ProcessSync } from "../../qjs-ext-lib/src/process.js";
 import Download from "./downloadManager.js";
 import { UserInterface } from "./userInterface.js";
 import utils from "./utils.js";
+import Fzf from "../../justjs/fzf.js"
 
 /**
  * @class WallpaperDownloadManager
@@ -52,28 +53,23 @@ export default class WallpaperDownloadManager extends Download {
     const availableWallpaperNames = this.downloadItemMenu.map((wallpaper) =>
       wallpaper.name
     ).join("\n");
-    const fzfCommand = [
-      "fzf",
-      "--color=16,current-bg:-1,current-fg:-1",
-      "--no-bold",
-      "-m",
-      "--bind",
-      "enter:select-all+accept",
-      "--layout=reverse",
-      "--info",
-      "inline-right",
-      "--prompt=",
-      "--marker=",
-      "--pointer=",
-      ...["--header", '"Filter wallpapers from list to preview for download."'],
-      "--header-first",
-      "--border=double",
-      '--border-label=" Available Wallpapers "',
-    ];
+    const fzf = new Fzf()
+    fzf.color("16,current-bg:-1,current-fg:-1")
+      .noBold()
+      .multi()
+      .bind("enter:select-all+accept")
+      .layout("reverse")
+      .info("inline-right")
+      .prompt("''")
+      .marker("''")
+      .pointer("''")
+      .header('"Filter wallpapers from list to preview for download."')
+      .headerFirst()
+      .border("double")
+      .borderLabel("' Available Wallpapers '")
 
-    const filter = new ProcessSync(fzfCommand, {
+    const filter = new ProcessSync(fzf.toString(), {
       input: availableWallpaperNames,
-      useShell: true,
     });
     try {
       filter.run();
@@ -122,7 +118,7 @@ export default class WallpaperDownloadManager extends Download {
     if (error !== 0) {
       throw new Error(
         `Failed to read temporary downloaded files: \n` +
-          this.destinationDir,
+        this.destinationDir,
       );
     }
 
@@ -158,7 +154,7 @@ export default class WallpaperDownloadManager extends Download {
     if (error) {
       throw new Error(
         `Failed to move wallpaper\n` +
-          `Error code: ${error}`,
+        `Error code: ${error}`,
       );
     }
     await utils.notify(

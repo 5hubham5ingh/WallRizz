@@ -2,6 +2,7 @@ import { ProcessSync } from "../../qjs-ext-lib/src/process.js";
 import Download from "./downloadManager.js";
 import { ansi } from "../../justjs/ansiStyle.js";
 import utils from "./utils.js";
+import Fzf from "../../justjs/fzf.js"
 
 /**
  * @typedef {import('./types.d.ts').DownloadItemMenu} DownloadItemMenu
@@ -51,8 +52,26 @@ class ExtensionScriptsDownloader extends Download {
     const header =
       `${ansi.style.bold}${ansi.style.brightCyan}"Type program name to search for ${kindOfScript}."`;
 
+    const fzf = new Fzf()
+
+    fzf
+      .color("16,current-bg:-1")
+      .multi()
+      .delimiter("/")
+      .withNth("-1")
+      .info("inline-right")
+      .preview("'cat {}'")
+      .previewWindow("down:40%,wrap")
+      .previewLabel(" Description ")
+      .layout("reverse")
+      .header(header)
+      .headerFirst()
+      .border("double")
+      .borderLabel(`" ${kindOfScript} "`)
+      .withShell("'/usr/bin/bash -c'")
+
     const filter = new ProcessSync(
-      `fzf --color=16,current-bg:-1 -m --delimiter / --with-nth -1 --info inline-right --preview="cat {}"  --preview-window="down:40%,wrap" --preview-label=" Description " --layout="reverse" --header=${header} --header-first --border=double --border-label=" ${kindOfScript} "`,
+      fzf.toString(),
       {
         input: tempScriptsPaths,
         useShell: true,
@@ -153,10 +172,9 @@ class WallpaperDaemonHandlerScriptDownloadManager
       ];
       if (err1 || err2) {
         throw new Error(
-          `Failed to read stat for: "${
-            err1
-              ? scriptA.concat("Error code", err1)
-              : scriptB.concat("Error code", err2)
+          `Failed to read stat for: "${err1
+            ? scriptA.concat("Error code", err1)
+            : scriptB.concat("Error code", err2)
           }".`,
         );
       }
