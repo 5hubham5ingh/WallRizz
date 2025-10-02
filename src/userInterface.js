@@ -4,7 +4,9 @@ import {
   cursorMove,
   cursorShow,
   cursorTo,
+  enterAlternativeScreen,
   eraseDown,
+  exitAlternativeScreen,
 } from "../../justjs/cursor.js";
 import { ansi } from "../../justjs/ansiStyle.js";
 import { handleKeysPress, keySequences } from "../../justjs/terminal.js";
@@ -47,7 +49,7 @@ class UserInterface {
       await this.handleListPreview();
 
       // Prepare UI config for grid preview
-      print(clearTerminal, cursorHide);
+      print(enterAlternativeScreen, cursorHide);
       // Get initial terminal size
       [this.terminalWidth, this.terminalHeight] = OS.ttyGetWinSize();
 
@@ -67,7 +69,7 @@ class UserInterface {
       this.drawUI();
       await this.handleKeysPress();
     } finally {
-      print(clearTerminal, cursorShow);
+      print(exitAlternativeScreen, cursorShow);
       OS.exec(["kitty", "@", "set-font-size", "--", "0"]);
     }
   }
