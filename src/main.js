@@ -254,7 +254,7 @@ class WallRizz {
             ansi.style.reset,
           ),
       ))
-      .ver("1.3.0")
+      .ver("1.4.0")
       .parse();
 
     // Convert parsed arguments to a more convenient object format
