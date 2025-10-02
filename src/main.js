@@ -54,6 +54,7 @@ class WallRizz {
       downloadThemeExtensionScripts: "--theme-extensions",
       colorExtractionCommand: "--color-backend",
       previewMode: "--preview-mode",
+      highlight: "--highlight",
       onFocus: "--on-focus",
       downloadWallpaperDaemonHandlerScript: "--wallpaper-handler",
       browseWallpaperOnline: "--browse",
@@ -130,6 +131,10 @@ class WallRizz {
           .str("grid")
           .enum(["grid", "list"])
           .desc("Wallpaper preview mode."),
+        [argNames.highlight]: arg
+          .str("border")
+          .enum(["border", "fill"])
+          .desc("Highlight current selection"),
         [argNames.onFocus]: arg
           .flag()
           .desc("Set wallpaper on focus."),

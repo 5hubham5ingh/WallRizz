@@ -352,10 +352,10 @@ class UserInterface {
    */
   drawContainerBorder([x, y]) {
     const OO = cursorTo(x, y);
-    const xBorderUp = "\b╭" + "─".repeat(this.containerWidth - 1) + "╮";
-    const xBorderDown = " ╰" + "─".repeat(this.containerWidth - 1) + "╯";
+    const xBorderUp = (USER_ARGUMENTS.highlight === "fill" ? "\b█" : "\b╭") + (USER_ARGUMENTS.highlight === "fill" ? "█" : "─").repeat(this.containerWidth - 1) + (USER_ARGUMENTS.highlight === "fill" ? "█" : "╮");
+    const xBorderDown = (USER_ARGUMENTS.highlight === "fill" ? " █" : " ╰") + (USER_ARGUMENTS.highlight === "fill" ? "█" : "─").repeat(this.containerWidth - 1) + (USER_ARGUMENTS.highlight === "fill" ? "█" : "╯");
     const newLine = cursorMove(-1 * (this.containerWidth + 2), 1);
-    const yBorder = ` │${" ".repeat(this.containerWidth - 1)}│${newLine}`;
+    const yBorder = ` ${(USER_ARGUMENTS.highlight === "fill" ? "█" : "│")}${(USER_ARGUMENTS.highlight === "fill" ? "█" : " ").repeat(this.containerWidth - 1)}${USER_ARGUMENTS.highlight === "fill" ? "█" : "│"}${newLine}`;
     const border = `${OO}${xBorderUp}${newLine}${yBorder.repeat(this.containerHeight - 1)
       }${xBorderDown}${OO}`;
     print(cursorTo(0, 0), eraseDown, ansi.style.brightWhite, border);

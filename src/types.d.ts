@@ -33,6 +33,9 @@ export type UserArguments = {
   /** Preview extracted colours pallete */
   previewMode: "list" | "grid";
 
+  /** Highlight mode on focus */
+  highlight: "border" | "fill";
+
   /** Set wallpaper on focus */
   onFocus: boolean;
 
