@@ -32,11 +32,13 @@ class UserInterface {
     wallpapersDirectory,
     handleSelection,
     getWallpaperPath,
+    handleFocus
   ) {
     this.wallpapers = wallpaperList;
     this.wallpapersDir = wallpapersDirectory;
     this.handleSelection = handleSelection;
     this.getWallpaperPath = getWallpaperPath;
+    this.handleFocus = handleFocus
     this.prepareUiConfig();
   }
 
@@ -442,6 +444,8 @@ ${styles.underline}                                                 ${styles.res
       this.wrapSelection(-1);
     }
     this.drawContainerBorder(this.xy[this.selection]);
+
+    return this?.handleFocus(this.wallpapers[this.selection]);
   }
 
   /**
@@ -452,6 +456,7 @@ ${styles.underline}                                                 ${styles.res
       this.wrapSelection(1);
     }
     this.drawContainerBorder(this.xy[this.selection]);
+    return this.handleFocus?.(this.wallpapers[this.selection]);
   }
 
   /**
@@ -459,6 +464,7 @@ ${styles.underline}                                                 ${styles.res
    */
   nextPage() {
     this.changePage(1, true);
+    return this.handleFocus?.(this.wallpapers[this.selection]);
   }
 
   /**
@@ -466,6 +472,7 @@ ${styles.underline}                                                 ${styles.res
    */
   prevPage() {
     this.changePage(-1, true);
+    return this.handleFocus?.(this.wallpapers[this.selection]);
   }
 
   /**
@@ -477,7 +484,7 @@ ${styles.underline}                                                 ${styles.res
       if (this.xy[i][0] === currentX) {
         this.selection = i;
         this.drawContainerBorder(this.xy[this.selection]);
-        return;
+        return this.handleFocus?.(this.wallpapers[this.selection]);
       }
     }
   }
@@ -495,7 +502,7 @@ ${styles.underline}                                                 ${styles.res
       if (this.xy[i][0] === currentX) {
         this.selection = i;
         this.drawContainerBorder(this.xy[this.selection]);
-        return;
+        return this.handleFocus?.(this.wallpapers[this.selection]);
       }
     }
   }

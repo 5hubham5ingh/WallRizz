@@ -33,6 +33,9 @@ export type UserArguments = {
   /** Preview extracted colours pallete */
   previewMode: "list" | "grid";
 
+  /** Set wallpaper on focus */
+  onFocus: boolean;
+
   /** Download a script to manage wallpaper daemon handlers */
   downloadWallpaperDaemonHandlerScript: boolean;
 

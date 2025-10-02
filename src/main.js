@@ -54,6 +54,7 @@ class WallRizz {
       downloadThemeExtensionScripts: "--theme-extensions",
       colorExtractionCommand: "--color-backend",
       previewMode: "--preview-mode",
+      onFocus: "--on-focus",
       downloadWallpaperDaemonHandlerScript: "--wallpaper-handler",
       browseWallpaperOnline: "--browse",
       wallpaperRepositoryUrls: "--repo-url",
@@ -129,6 +130,9 @@ class WallRizz {
           .str("grid")
           .enum(["grid", "list"])
           .desc("Wallpaper preview mode."),
+        [argNames.onFocus]: arg
+          .flag()
+          .desc("Set wallpaper on focus."),
         [argNames.downloadWallpaperDaemonHandlerScript]: arg
           .flag(false)
           .desc("Download wallpaper handler script."),

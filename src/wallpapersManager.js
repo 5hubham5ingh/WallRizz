@@ -29,7 +29,7 @@ export default class WallpaperSetter {
     if (error !== 0) {
       throw new Error(
         "Failed to read wallpapers directory:\n" +
-          USER_ARGUMENTS.wallpapersDirectory,
+        USER_ARGUMENTS.wallpapersDirectory,
       );
     }
     const wallpapers = imgFiles.filter(
@@ -43,7 +43,7 @@ export default class WallpaperSetter {
       if (error) {
         throw new Error(
           "Failed to read wallpaper stat for:\n" +
-            USER_ARGUMENTS.wallpapersDirectory.concat(name),
+          USER_ARGUMENTS.wallpapersDirectory.concat(name),
         );
       }
       const { dev, ino } = stats;
@@ -87,7 +87,7 @@ export default class WallpaperSetter {
     } else {
       throw new SystemError(
         "Failed to find any wallpaper daemon handler script in " +
-          extensionDir,
+        extensionDir,
         'Run "WallRizz -w" to download it.',
       );
     }
@@ -177,6 +177,7 @@ export default class WallpaperSetter {
       this.picCacheDir,
       this.handleSelection.bind(this),
       this.getWallpaperPath.bind(this),
+      USER_ARGUMENTS.onFocus ? this.handleSelection.bind(this) : () => { }
     );
     await ui.init();
   }
