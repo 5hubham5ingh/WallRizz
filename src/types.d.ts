@@ -79,7 +79,10 @@ export type UserArguments = {
   test: boolean;
 
   /** Run update **/
-  update: boolean
+  update: boolean;
+
+  /** Thumbnail size **/
+  thumbnailSize: string;
 };
 
 /**

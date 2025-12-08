@@ -65,11 +65,12 @@ class WallRizz {
       disableAutoScaling: "--disable-autoscaling",
       setInterval: "--set-interval",
       setIntervalCallback: "--set-interval-callback",
+      thumbnailSize: "--thumbnail",
       hold: "--hold",
       processLimit: "--plimit",
       inspection: "--inspection",
       test: "--test",
-      update: "--update"
+      update: "--update",
     };
 
     // Define and parse command-line arguments using the 'arg' library
@@ -167,6 +168,10 @@ class WallRizz {
         [argNames.disableAutoScaling]: arg
           .flag(false)
           .desc("Disable auto scale terminal size to fit all images."),
+        [argNames.thumbnailSize]: arg
+          .str("800x600")
+          .reg(/^\d+x\d+$/)
+          .desc("Thumbnail size"),
         [argNames.setInterval]: arg
           .num(0)
           .min(0)
@@ -302,7 +307,7 @@ class WallRizz {
 
   async handleRunUpdate() {
     if (!USER_ARGUMENTS.update) return;
-    await utils.checkForUpdate()
+    await utils.checkForUpdate();
     throw EXIT;
   }
 
