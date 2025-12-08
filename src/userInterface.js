@@ -13,7 +13,7 @@ import { handleKeysPress, keySequences } from "../../justjs/terminal.js";
 import utils from "./utils.js";
 import { Theme } from "./themeManager.js";
 import { ProcessSync } from "../../qjs-ext-lib/src/process.js";
-import Fzf from "../../justjs/fzf.js"
+import Fzf from "../../justjs/fzf.js";
 
 /**
  * @typedef {import('./types.d.ts').WallpapersList} WallpapersList
@@ -32,13 +32,13 @@ class UserInterface {
     wallpapersDirectory,
     handleSelection,
     getWallpaperPath,
-    handleFocus
+    handleFocus,
   ) {
     this.wallpapers = wallpaperList;
     this.wallpapersDir = wallpapersDirectory;
     this.handleSelection = handleSelection;
     this.getWallpaperPath = getWallpaperPath;
-    this.handleFocus = handleFocus
+    this.handleFocus = handleFocus;
     this.prepareUiConfig();
   }
 
@@ -131,22 +131,25 @@ class UserInterface {
       .then((_) =>
         "--preview='kitty icat --clear --transfer-mode=memory --stdin=no --scale-up --place=${FZF_PREVIEW_COLUMNS}x${FZF_PREVIEW_LINES}@0x0 "
       ).catch((_) =>
-        `--preview='timg -U -W --clear -pk -g${parseInt(width * 6.5 / 10)}x${parseInt(height)
+        `--preview='timg -U -W --clear -pk -g${parseInt(width * 6.5 / 10)}x${
+          parseInt(height)
         } `
       );
 
-    const fzf = new Fzf()
+    const fzf = new Fzf();
     fzf.color("16,current-bg:-1")
       .read0()
       .delimiter("' '")
       .withNth("1")
-      .custom(icat + this.wallpapersDir + "`echo -e {} | head -n 2 | tail -n 1`'")
+      .custom(
+        icat + this.wallpapersDir + "`echo -e {} | head -n 2 | tail -n 1`'",
+      )
       .previewWindow("wrap,border-none")
       .noInfo()
       .separator("' '")
       .bind("'focus:transform-header(echo -e {} | tail -n +3)'")
       .layout("reverse")
-      .withShell("'/usr/bin/bash -c'")
+      .withShell("'/usr/bin/bash -c'");
 
     // Calculate the length of the palette view
     const maxLineLength = Math.floor(width / 2);
@@ -183,14 +186,14 @@ class UserInterface {
       fzf.toString(),
       {
         input: fzfInput, // Pass the formatted options as input to fzf
-        useShell: true
+        useShell: true,
       },
     );
 
     try {
       previewer.run();
     } catch (error) {
-      print(error)
+      print(error);
       throw new SystemError(
         "Failed to run fzf.",
         "Make sure fzf is installed and available in the system.",
@@ -199,7 +202,7 @@ class UserInterface {
     }
 
     if (!previewer.success) {
-      STD.exit()
+      STD.exit();
       throw new SystemError("Error", previewer.stderr || "No item selected.");
     }
 
@@ -336,7 +339,8 @@ class UserInterface {
         "kitten",
         "icat",
         "--stdin=no",
-        "--scale-up",
+        "--align=center",
+        "--scale-up=yes",
         "--place",
         coordinates,
         wallpaperDir,
@@ -352,12 +356,23 @@ class UserInterface {
    */
   drawContainerBorder([x, y]) {
     const OO = cursorTo(x, y);
-    const xBorderUp = (USER_ARGUMENTS.highlight === "fill" ? "\b█" : "\b╭") + (USER_ARGUMENTS.highlight === "fill" ? "█" : "─").repeat(this.containerWidth - 1) + (USER_ARGUMENTS.highlight === "fill" ? "█" : "╮");
-    const xBorderDown = (USER_ARGUMENTS.highlight === "fill" ? " █" : " ╰") + (USER_ARGUMENTS.highlight === "fill" ? "█" : "─").repeat(this.containerWidth - 1) + (USER_ARGUMENTS.highlight === "fill" ? "█" : "╯");
+    const xBorderUp = (USER_ARGUMENTS.highlight === "fill" ? "\b█" : "\b╭") +
+      (USER_ARGUMENTS.highlight === "fill" ? "█" : "─").repeat(
+        this.containerWidth - 1,
+      ) + (USER_ARGUMENTS.highlight === "fill" ? "█" : "╮");
+    const xBorderDown = (USER_ARGUMENTS.highlight === "fill" ? " █" : " ╰") +
+      (USER_ARGUMENTS.highlight === "fill" ? "█" : "─").repeat(
+        this.containerWidth - 1,
+      ) + (USER_ARGUMENTS.highlight === "fill" ? "█" : "╯");
     const newLine = cursorMove(-1 * (this.containerWidth + 2), 1);
-    const yBorder = ` ${(USER_ARGUMENTS.highlight === "fill" ? "█" : "│")}${(USER_ARGUMENTS.highlight === "fill" ? "█" : " ").repeat(this.containerWidth - 1)}${USER_ARGUMENTS.highlight === "fill" ? "█" : "│"}${newLine}`;
-    const border = `${OO}${xBorderUp}${newLine}${yBorder.repeat(this.containerHeight - 1)
-      }${xBorderDown}${OO}`;
+    const yBorder = ` ${(USER_ARGUMENTS.highlight === "fill" ? "█" : "│")}${
+      (USER_ARGUMENTS.highlight === "fill" ? "█" : " ").repeat(
+        this.containerWidth - 1,
+      )
+    }${USER_ARGUMENTS.highlight === "fill" ? "█" : "│"}${newLine}`;
+    const border = `${OO}${xBorderUp}${newLine}${
+      yBorder.repeat(this.containerHeight - 1)
+    }${xBorderDown}${OO}`;
     print(cursorTo(0, 0), eraseDown, ansi.style.brightWhite, border);
   }
 
@@ -564,6 +579,14 @@ ${styles.underline}                                                 ${styles.res
       [keySequences.Enter]: this.handleEnter.bind(this),
       [keySequences.Escape]: this.handleExit.bind(this),
       f: this.enableFullScreenPreview.bind(this),
+      [keySequences.Space]: () => {
+        USER_ARGUMENTS.hold = !USER_ARGUMENTS.hold;
+      },
+      [keySequences.Tab]: () => {
+        USER_ARGUMENTS.highlight = USER_ARGUMENTS.highlight === "border"
+          ? "fill"
+          : "border";
+      },
     };
 
     await handleKeysPress(keyPressHandlers);
