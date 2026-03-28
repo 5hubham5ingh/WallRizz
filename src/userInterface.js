@@ -445,7 +445,7 @@ ${styles.underline}                                                 ${styles.res
     }
     this.drawContainerBorder(this.xy[this.selection]);
 
-    return this?.handleFocus(this.wallpapers[this.selection]);
+    return this.handleFocus?.(this.wallpapers[this.selection]);
   }
 
   /**
