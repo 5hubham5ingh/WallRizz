@@ -49,7 +49,9 @@ export default class WallpaperSetter {
       const { dev, ino } = stats;
       return {
         name,
-        uniqueId: `${dev}${ino}`.concat(name.slice(name.lastIndexOf("."))),
+        uniqueId: `${dev}${ino}`.concat(
+          ".png", /*name.slice(name.lastIndexOf("."))*/
+        ),
       };
     });
 

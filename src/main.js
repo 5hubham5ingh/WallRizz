@@ -4,7 +4,6 @@ import {
   ThemeExtensionScriptsDownloadManager,
   WallpaperDaemonHandlerScriptDownloadManager,
 } from "./extensionDownloadManager.js";
-import WallpaperDownloadManager from "./wallpaperDownloadManager.js";
 import WallpaperSetter from "./wallpapersManager.js";
 import { UserInterface } from "./userInterface.js";
 import { ansi } from "../../justjs/ansiStyle.js";
@@ -23,13 +22,11 @@ class WallRizz {
       await this.handleExtensionTest();
       await this.handleThemeExtensionScriptDownload();
       await this.handleWallpaperHandlerScriptDownload();
-      OS.ttySetRaw(); // enable raw mode for grid UI
-      await this.handleWallpaperBrowsing();
       await this.handleWallpaperSetter();
     } catch (status) {
       this.handleExecutionStatus(status);
     } finally {
-      STD.exit(0);
+      USER_ARGUMENTS.inspection && print(USER_ARGUMENTS);
     }
   }
 
@@ -57,9 +54,6 @@ class WallRizz {
       highlight: "--highlight",
       onFocus: "--on-focus",
       downloadWallpaperDaemonHandlerScript: "--wallpaper-handler",
-      browseWallpaperOnline: "--browse",
-      wallpaperRepositoryUrls: "--repo-url",
-      githubApiKey: "--api-key",
       showKeyMap: "--show-keymap",
       disableNotification: "--disable-notification",
       disableAutoScaling: "--disable-autoscaling",
@@ -86,7 +80,7 @@ class WallRizz {
           .flag(false)
           .desc("Apply random wallpaper from the directory."),
         [argNames.imageSize]: arg
-          .str("30x10")
+          .str("32x9")
           .reg(/^\d+x\d+$/)
           .desc("Image cell size.")
           .val("WIDTHxHEIGHT")
@@ -98,7 +92,7 @@ class WallRizz {
           "Enable light theme.",
         ),
         [argNames.padding]: arg
-          .str("1x1")
+          .str("2x1")
           .reg(/^\d+x\d+$/)
           .err(
             "Invalid padding, it should of VERTICLE_PADDINGxHORIZONTAL_PADDING format. \n Ex:- 2x1",
@@ -169,7 +163,7 @@ class WallRizz {
           .flag(false)
           .desc("Disable auto scale terminal size to fit all images."),
         [argNames.thumbnailSize]: arg
-          .str("800x600")
+          .str("600x338")
           .reg(/^\d+x\d+$/)
           .desc("Thumbnail size"),
         [argNames.setInterval]: arg
@@ -197,7 +191,7 @@ class WallRizz {
           .min(1)
           .desc("Number of execution threads used. (default: auto)"),
         [argNames.inspection]: arg
-          .flag(true)
+          .flag(false)
           .desc("Enable log for inspection."),
         [argNames.test]: arg
           .flag()
@@ -259,7 +253,7 @@ class WallRizz {
             ansi.style.reset,
           ),
       ))
-      .ver("1.4.0")
+      .ver("1.5.0")
       .parse();
 
     // Convert parsed arguments to a more convenient object format
@@ -286,13 +280,6 @@ class WallRizz {
     if (!USER_ARGUMENTS.downloadWallpaperDaemonHandlerScript) return;
     const downloadManager = new WallpaperDaemonHandlerScriptDownloadManager();
     await downloadManager.init();
-  }
-
-  async handleWallpaperBrowsing() {
-    if (!USER_ARGUMENTS.browseWallpaperOnline) return;
-
-    const wallpaperDownloadManager = new WallpaperDownloadManager();
-    await wallpaperDownloadManager.init();
   }
 
   async handleWallpaperSetter() {
