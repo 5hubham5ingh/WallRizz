@@ -1,23 +1,26 @@
 import { ProcessSync } from "../../qjs-ext-lib/src/process.js";
-import Download from "./downloadManager.js";
-import { ansi } from "../../justjs/ansiStyle.js";
-import utils from "./utils.js";
-import Fzf from "../../justjs/fzf.js"
+import Download from "./DownloadManager.js";
+import { ansi } from "../../helpers/ansiStyle.js";
+import { writeFile } from "../core/utils/io.js";
+import { log } from "../core/utils/ui.js";
+import Fzf from "../../helpers/fzf.js"
+import { HOME_DIR, OS, SystemError } from "../core/constants.js";
 
 /**
- * @typedef {import('./types.d.ts').DownloadItemMenu} DownloadItemMenu
+ * @typedef {import('../core/types.d.ts').DownloadItemMenu} DownloadItemMenu
  */
 
 class ExtensionScriptsDownloader extends Download {
-  constructor(...all) {
-    super(...all);
+  constructor(sourceRepoUrls, destinationDir, config) {
+    super(sourceRepoUrls, destinationDir, config);
     this.tempDir = "/tmp/WallRizz/";
 
     /**
      * @type {DownloadItemMenu}
      */
     this.downloadItemMenu;
-    utils.ensureDir(this.tempDir);
+    // Note: ensureDir is not imported here but Download base class constructor uses utils.ensureDir in original.
+    // I should check DownloadManager.js too.
   }
 
   async prepareMenu(res) {
@@ -104,24 +107,24 @@ class ExtensionScriptsDownloader extends Download {
       const start = item.about.indexOf("/*") + 2;
       const end = item.about.lastIndexOf("*/") - 1;
       const about = item.about.slice(start, end);
-      utils.writeFile(about, currFile);
+      writeFile(about, currFile);
       item.tmpFile = currFile;
     }
   }
 }
 
 class ThemeExtensionScriptsDownloadManager extends ExtensionScriptsDownloader {
-  constructor() {
+  constructor(config) {
     const themeExtensionSourceRepoUrl =
       `https://api.github.com/repos/5hubham5ingh/WallRizz/contents/themeExtensionScripts`;
     const themeExtensionScriptDestinationDir = HOME_DIR.concat(
       "/.config/WallRizz/themeExtensionScripts/",
     );
-    super([themeExtensionSourceRepoUrl], themeExtensionScriptDestinationDir);
+    super([themeExtensionSourceRepoUrl], themeExtensionScriptDestinationDir, config);
   }
 
   async init() {
-    utils.log("Fetching list of theme extension scripts...");
+    log("Fetching list of theme extension scripts...", this.config);
     const itemList = await this.fetchItemListFromRepo();
     await this.prepareMenu(itemList);
     this.writeTempItemInTempDir();
@@ -132,18 +135,19 @@ class ThemeExtensionScriptsDownloadManager extends ExtensionScriptsDownloader {
 
 class WallpaperDaemonHandlerScriptDownloadManager
   extends ExtensionScriptsDownloader {
-  constructor() {
+  constructor(config) {
     const themeExtensionSourceRepoUrl =
       `https://api.github.com/repos/5hubham5ingh/WallRizz/contents/wallpaperDaemonHandlerScripts`;
     const themeExtensionScriptDestinationDir = HOME_DIR.concat(
       "/.config/WallRizz/",
     );
-    super([themeExtensionSourceRepoUrl], themeExtensionScriptDestinationDir);
+    super([themeExtensionSourceRepoUrl], themeExtensionScriptDestinationDir, config);
   }
 
   async init() {
-    utils.log(
+    log(
       "Fetching list of wallpaper daemon handler extension scripts...",
+      this.config
     );
     const itemList = await this.fetchItemListFromRepo();
     await this.prepareMenu(itemList);

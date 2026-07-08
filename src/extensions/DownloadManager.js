@@ -1,25 +1,29 @@
 import { Curl } from "../../qjs-ext-lib/src/curl.js";
-import utils from "./utils.js";
+import { ensureDir, writeFile } from "../core/utils/io.js";
+import { notify } from "../core/utils/ui.js";
+import { HOME_DIR, STD, SystemError, execAsync } from "../core/constants.js";
 
 /**
- * @typedef {import('./types.d.ts').ApiCache} ApiCache
- * @typedef {import('./types.d.ts').DownloadItemList} DownloadItemList
+ * @typedef {import('../core/types.d.ts').ApiCache} ApiCache
+ * @typedef {import('../core/types.d.ts').DownloadItemList} DownloadItemList
  */
 
 export default class Download {
   /**
    * @param {string[]} sourceRepoUrls
    * @param {string} destinationDir
+   * @param {Object} config
    */
-  constructor(sourceRepoUrls, destinationDir) {
+  constructor(sourceRepoUrls, destinationDir, config) {
     this.destinationDir = destinationDir;
     this.sourceRepoUrls = sourceRepoUrls.map(Download.ensureGitHubApiUrl);
+    this.config = config;
 
     /** @type {DownloadItemList} */
     this.downloadItemList = [];
 
     this.apiCacheFilePath = `${HOME_DIR}/.cache/WallRizz/apiCache.json`;
-    utils.ensureDir(this.destinationDir);
+    ensureDir(this.destinationDir);
     const apiCacheFile = STD.loadFile(this.apiCacheFilePath);
     /** @type {ApiCache} */
     this.apiCache = apiCacheFile ? JSON.parse(apiCacheFile) : [];
@@ -41,7 +45,7 @@ export default class Download {
       } else {
         this.apiCache.push(updatedData);
       }
-      utils.writeFile(JSON.stringify(this.apiCache), this.apiCacheFilePath);
+      writeFile(JSON.stringify(this.apiCache), this.apiCacheFilePath);
     };
 
     const currentCache = this.apiCache.find((cache) => cache.url === url) ||
@@ -51,8 +55,8 @@ export default class Download {
       parseJson: true,
       headers: {
         "if-none-match": currentCache.etag,
-        Authorization: USER_ARGUMENTS.githubApiKey
-          ? `token ${USER_ARGUMENTS.githubApiKey}`
+        Authorization: this.config.githubApiKey
+          ? `token ${this.config.githubApiKey}`
           : null,
         ...headers,
       },
@@ -94,7 +98,7 @@ export default class Download {
       if (Array.isArray(itemList)) {
         Array.prototype.push.apply(acc, itemList);
       } else {
-        utils.notify("Invalid item list received:", itemList, "critical");
+        notify("Invalid item list received:", JSON.stringify(itemList), "critical", this.config);
       }
       return acc;
     }, []);

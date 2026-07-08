@@ -1,5 +1,4 @@
-import { Theme } from "./themeManager.js";
-import utils from "./utils.js";
+import { OS, STD, execAsync, EXIT } from "../core/constants.js";
 import {
   clearTerminal,
   cursorHide,
@@ -9,45 +8,20 @@ import {
   enterAlternativeScreen,
   eraseDown,
   exitAlternativeScreen,
-} from "../../justjs/cursor.js";
-import { ansi } from "../../justjs/ansiStyle.js";
-import { handleKeysPress, keySequences } from "../../justjs/terminal.js";
-import exec, { ProcessSync } from "../../qjs-ext-lib/src/process.js";
-import Fzf from "../../justjs/fzf.js";
-import { printf } from "../../qjs-ext-lib/src/std.js";
+} from "../../helpers/cursor.js";
+import { handleKeysPress, keySequences } from "../../helpers/terminal.js";
 
-/**
- * @typedef {import('./types.d.ts').WallpapersList} WallpapersList
- */
-
-class UserInterface {
-  /**
-   * @param {WallpapersList} wallpaperList
-   * @param {string} wallpapersDirectory
-   * @param {Function} handleSelection
-   * @param {Function} getWallpaperPath
-   * @param {Function} handleFocus
-   */
-  constructor(
-    wallpaperList,
-    wallpapersDirectory,
-    handleSelection,
-    getWallpaperPath,
-    handleFocus,
-  ) {
-    this.wallpapers = wallpaperList;
-    this.wallpapersDir = wallpapersDirectory;
+export class GalleryView {
+  constructor(config, wallpapers, wallpapersDir, handleSelection, getWallpaperPath, onFocus) {
+    this.config = config;
+    this.wallpapers = wallpapers;
+    this.wallpapersDir = wallpapersDir;
     this.handleSelection = handleSelection;
     this.getWallpaperPath = getWallpaperPath;
-    this.handleFocus = handleFocus;
+    this.onFocusCallback = onFocus;
   }
 
-  /**
-   * Initialize UI
-   */
-  async init() {
-    await this.handleListPreview();
-
+  async render() {
     const pngPaths = this.wallpapers.map((img) => ({
       filePath: this.wallpapersDir + img.uniqueId,
       meta: img,
@@ -55,23 +29,23 @@ class UserInterface {
 
     const [terminalWidth, terminalHeight] = OS.ttyGetWinSize();
 
-    const gridSize = USER_ARGUMENTS.enablePagination
-      ? `${USER_ARGUMENTS.gridSize[1]}x${USER_ARGUMENTS.gridSize[0]}`
+    const gridSize = this.config.enablePagination
+      ? `${this.config.gridSize[1]}x${this.config.gridSize[0]}`
       : this.autoGridSize(terminalWidth, terminalHeight);
 
     await this.gallery(pngPaths, {
       gridSize,
-      highlightType: USER_ARGUMENTS.highlight,
+      highlightType: this.config.highlight,
       terminalSize: `${terminalWidth}x${terminalHeight}`,
       cellPadding: {
-        vertical: USER_ARGUMENTS.padding?.[0],
-        horizontal: USER_ARGUMENTS.padding?.[1],
+        vertical: this.config.padding?.[0],
+        horizontal: this.config.padding?.[1],
       },
       origin: "0x1",
       onFocus: (_, index) => {
-        if (!USER_ARGUMENTS.onFocus) return;
+        if (!this.config.onFocus) return;
         const wallpaper = this.wallpapers[index];
-        return this.handleFocus?.(wallpaper);
+        return this.onFocusCallback?.(wallpaper);
       },
       onSelect: async (_, index) => {
         const wallpaper = this.wallpapers[index];
@@ -81,12 +55,9 @@ class UserInterface {
     }).catch(print);
   }
 
-  /**
-   * Automatically compute grid size when pagination is disabled
-   */
   autoGridSize(terminalWidth, terminalHeight) {
-    const [imgW, imgH] = USER_ARGUMENTS.imageSize;
-    const [padY, padX] = USER_ARGUMENTS.padding;
+    const [imgW, imgH] = this.config.imageSize;
+    const [padY, padX] = this.config.padding;
 
     const containerWidth = imgW + padX;
     const containerHeight = imgH + padY;
@@ -95,115 +66,6 @@ class UserInterface {
     const rows = Math.max(1, Math.floor(terminalHeight / containerHeight));
 
     return `${cols}x${rows}`;
-  }
-
-  /**
-   * Retains list preview behaviour (fzf mode)
-   */
-  async handleListPreview() {
-    if (USER_ARGUMENTS.previewMode === "grid") return;
-    const [width, height] = OS.ttyGetWinSize();
-    const cachedColoursFile = STD.loadFile(
-      Theme.wallpaperColoursCacheFilePath,
-    );
-    const cachedColours = JSON.parse(cachedColoursFile);
-    const wallColors = Object.fromEntries(
-      Object.entries(
-        cachedColours,
-      )
-        .map(([wallId, pallete]) => {
-          const wallpaperName = this.wallpapers.find((wallpaper) =>
-            wallpaper.uniqueId === wallId
-          )?.name;
-          return wallpaperName
-            ? [[wallpaperName.concat("#", wallId)], pallete]
-            : null;
-        })
-        .filter(Boolean),
-    );
-
-    const kittyPreviewCmd =
-      "--preview='printf \"\\x1b[0;0H\\x1b_Ga=T,t=f,f=100,q=2,c=${FZF_PREVIEW_COLUMNS};`echo -e {} | head -n 2 | tail -n 1`\\x1b\\\\\" >> /dev/tty'";
-
-    const fzf = new Fzf();
-    fzf.color("16,current-bg:-1")
-      .read0()
-      .delimiter("' '")
-      .withNth("1")
-      .previewWindow(
-        `wrap,border-none,left,${(USER_ARGUMENTS.imageSize[0] + 2) * 2}`,
-      )
-      .noInfo()
-      .separator("' '")
-      .bind("'focus:transform-footer(echo -e {} | tail -n +3)'")
-      .layout("reverse")
-      .withShell("'/usr/bin/bash -c'")
-      .custom(kittyPreviewCmd)
-      .custom("--footer-border=none");
-
-    // Calculate the length of the palette view
-    const maxLineLength = Math.floor(
-      width - (USER_ARGUMENTS.imageSize[0] + 2) * 2,
-    );
-
-    // Generate FZF input
-    const fzfInput = Object.entries(wallColors)
-      .map(([wallpaperName, palette]) => {
-        const [wpName, id] = wallpaperName.split("#");
-        const name = wpName.includes(" ") ? `"${wpName}"` : wpName;
-
-        const wordLength = Math.floor(maxLineLength / palette.length) || 1;
-
-        // Generate the visual representation of the palette
-        const paletteVisualization = (() => {
-          const line = palette
-            .map((color) =>
-              `${ansi.bgHex(color)}${ansi.hex(color)}${"-".repeat(wordLength)}`
-            )
-            .join("");
-
-          // Duplicate the line and return the result
-          return Array(wordLength * 2)
-            .fill(`\b${line}`)
-            .join("\n")
-            .slice(0, -1);
-        })();
-
-        // Format the entry for FZF
-        return `${name ?? this.getWallpaperPath({ uniqueId: id, name })} \n${
-          this.toBase64(this.wallpapersDir + id)
-        } \n${JSON.stringify(paletteVisualization)}\n`;
-      })
-      .join("\0");
-
-    const previewer = new ProcessSync(
-      fzf.toString(),
-      {
-        input: fzfInput, // Pass the formatted options as input to fzf
-        useShell: true,
-      },
-    );
-
-    try {
-      previewer.run();
-    } catch (error) {
-      print(error);
-      throw new SystemError(
-        "Failed to run fzf.",
-        "Make sure fzf is installed and available in the system.",
-        error,
-      );
-    }
-
-    if (!previewer.success) {
-      STD.exit();
-      throw new SystemError("Error", previewer.stderr || "No item selected.");
-    }
-
-    const wallpaper = previewer.stdout.split("\n")[0].trim();
-    const selection = this.wallpapers.find((wp) => wp.name === wallpaper);
-    await this.handleSelection(selection);
-    throw EXIT;
   }
 
   toBase64(str) {
@@ -255,17 +117,10 @@ class UserInterface {
       STD.out.puts(cursorTo(position.row, position.column));
     }
 
-    // Build params:
-    //    a=T  → Transmit AND display in one command
-    //    t=f  → Transmission medium is a file path
-    //    f=100 → Payload is PNG format (not BMP/f=29)
-    //    q=2  → Suppress terminal response (prevents garbage in shell prompt)
     let params = "a=T,t=f,f=100,q=2";
     if (size?.columns) params += `,c=${size.columns}`;
     if (size?.rows) params += `,r=${size.rows}`;
 
-    // Send the escape sequence
-    //    Format: ESC_G<params>;<base64-encoded-path>ESC\
     const escapeSequence = `\x1b_G${params};${encodedPath}\x1b\\`;
     STD.out.puts(escapeSequence);
     STD.out.flush();
@@ -284,10 +139,8 @@ class UserInterface {
       getHiRes = () => {},
     },
   ) {
-    /*------------------ Args validation ---------------*/
     if (!Array.isArray(pngs)) throw TypeError("'pngs' must be an array of png");
 
-    /*----------------------- Grid Setup ---------------------*/
     const [originX, originY] = origin ? origin.split("x").map(Number) : [0, 0];
     const [terminalWidth, terminalHeight] = terminalSize
       ? terminalSize.split("x").map(Number)
@@ -297,7 +150,6 @@ class UserInterface {
     const cellWidth = Math.floor(terminalWidth / targetCols);
     const cellHeight = Math.floor(terminalHeight / targetRows);
 
-    // Calculate offsets to center the grid
     const usedWidth = cellWidth * targetCols;
     const usedHeight = cellHeight * targetRows;
     const offsetX = originX + Math.floor((terminalWidth - usedWidth) / 2);
@@ -312,14 +164,11 @@ class UserInterface {
       }
     }
 
-    /*------------------ State Management -----------------*/
-
-    let currentCell = 0; // Index relative to the current page
+    let currentCell = 0;
     let currentPage = 0;
     const maxCellsInGrid = targetCols * targetRows;
     const totalPages = Math.ceil(pngs.length / maxCellsInGrid);
 
-    /*------------------ Rendering Helpers -----------------*/
     const label = highlightType === "fill" ? "█" : " ";
 
     const renderHighlight = (cellIndex) => {
@@ -351,20 +200,16 @@ class UserInterface {
       STD.out.flush();
     };
 
-    // Renders the full grid of images for the current page
     const renderPage = async () => {
-      // Clear all images
       STD.out.puts(clearTerminal);
 
       const startIdx = currentPage * maxCellsInGrid;
       const promises = [];
 
-      // Loop through grid slots
       for (let i = 0; i < maxCellsInGrid; i++) {
         const pngIndex = startIdx + i;
         const coord = coordinates[i];
 
-        // If we have an image, render it
         if (pngIndex < pngs.length) {
           promises.push(
             this.renderImage(pngs[pngIndex], {
@@ -388,19 +233,14 @@ class UserInterface {
       }
     };
 
-    /*--------------------- Init ----------------------*/
-
-    // Initial Render
     OS.ttySetRaw();
     STD.out.puts(cursorHide);
     await renderPage();
     let isFullScreen = false;
 
-    /*------------------- Event handlers --------------------*/
     const moveSelectionDown = () => {
       if (isFullScreen) return;
       if (currentCell + targetCols < maxCellsInGrid) {
-        // Ensure we don't select an empty slot on the last page
         const nextGlobal = (currentPage * maxCellsInGrid) +
           (currentCell + targetCols);
         if (nextGlobal < pngs.length) {
@@ -440,45 +280,36 @@ class UserInterface {
 
     const moveSelection = async (direction) => {
       if (isFullScreen) return;
-      // Current Global Index
       const globalIdx = (currentPage * maxCellsInGrid) + currentCell;
 
-      // --- NEXT PAGE Logic (Right Arrow) ---
       if (direction === "NEXT") {
         const isLastCellInGrid = currentCell === maxCellsInGrid - 1;
         const isLastImage = globalIdx === pngs.length - 1;
 
-        // Case 1: Just move next in current grid
         if (!isLastCellInGrid && !isLastImage) {
           currentCell++;
-          renderHighlight(currentCell); // Draw new
+          renderHighlight(currentCell);
           onFocus(pngs[globalIdx + 1], globalIdx + 1);
-        } // Case 2: Wrap to Next Page
-        else if (isLastCellInGrid && currentPage < totalPages - 1) {
+        } else if (isLastCellInGrid && currentPage < totalPages - 1) {
           currentPage++;
-          currentCell = 0; // Focus first cell
-          await renderPage(); // Re-render images
+          currentCell = 0;
+          await renderPage();
         }
-        // Case 3: End of content (Do nothing)
         return;
       }
 
-      // --- PREV PAGE Logic (Left Arrow) ---
       if (direction === "PREV") {
         const isFirstCellInGrid = currentCell === 0;
 
-        // Case 1: Just move back in current grid
         if (!isFirstCellInGrid) {
           currentCell--;
           renderHighlight(currentCell);
           onFocus(pngs[globalIdx - 1], globalIdx - 1);
-        } // Case 2: Wrap to Prev Page
-        else if (isFirstCellInGrid && currentPage > 0) {
+        } else if (isFirstCellInGrid && currentPage > 0) {
           currentPage--;
-          currentCell = maxCellsInGrid - 1; // Focus last cell
+          currentCell = maxCellsInGrid - 1;
           await renderPage();
         }
-        // Case 3: Start of content (Do nothing)
         return;
       }
     };
@@ -502,16 +333,13 @@ class UserInterface {
       exit();
     };
 
-    /*--------------------- Event Loop ----------------------*/
     await handleKeysPress({
-      // Standard Grid Navigation (Up/Down don't change pages in grids, only rows)
       [keySequences.ArrowDown]: moveSelectionDown,
       "j": moveSelectionDown,
 
       [keySequences.ArrowUp]: moveSelectionUp,
       "k": moveSelectionUp,
 
-      // Pagination Navigation
       [keySequences.ArrowRight]: () => moveSelection("NEXT"),
       "l": () => moveSelection("NEXT"),
       [keySequences.ArrowLeft]: () => moveSelection("PREV"),
@@ -519,11 +347,9 @@ class UserInterface {
 
       "f": toggleFullscreen,
 
-      // Page Navigation
       "H": prevPage,
       "L": nextPage,
 
-      // Selection
       [keySequences.Enter]: () => {
         const globalIndex = (currentPage * maxCellsInGrid) + currentCell;
         if (pngs[globalIndex]) {
@@ -558,5 +384,3 @@ class UserInterface {
     return rows.join("\n");
   }
 }
-
-export { UserInterface };

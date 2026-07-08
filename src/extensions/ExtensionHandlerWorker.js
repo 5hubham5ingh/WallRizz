@@ -1,8 +1,11 @@
-import * as _ from "./globalConstants.js";
-import Color from "./Color/color.js";
-import utils from "./utils.js";
+import { OS, SystemError, EXIT, Color, execAsync, STD, HOME_DIR } from "../core/constants.js";
+import { writeFile } from "../core/utils/io.js";
 
 globalThis.Color = Color;
+globalThis.execAsync = execAsync;
+globalThis.STD = STD;
+globalThis.OS = OS;
+globalThis.HOME_DIR = HOME_DIR;
 
 const parent = OS.Worker.parent;
 
@@ -29,7 +32,7 @@ const startWork = async (data) => {
     }
     try {
       const result = await cb(...args);
-      if (!!result && !!cacheDir) utils.writeFile(result, cacheDir);
+      if (!!result && !!cacheDir) writeFile(result, cacheDir);
     } catch (status) {
       if (status === EXIT) continue;
 

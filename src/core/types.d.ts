@@ -42,12 +42,6 @@ export type UserArguments = {
   /** Download a script to manage wallpaper daemon handlers */
   downloadWallpaperDaemonHandlerScript: boolean;
 
-  /** Whether to allow browsing wallpapers from online repositories */
-  browseWallpaperOnline: boolean;
-
-  /** List of URLs to wallpaper repositories */
-  wallpaperRepositoryUrls: string[];
-
   /** GitHub API key for downloading wallpapers from repositories */
   githubApiKey: string;
 

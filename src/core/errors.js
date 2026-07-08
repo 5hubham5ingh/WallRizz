@@ -1,19 +1,5 @@
+import { ansi } from "../../helpers/ansiStyle.js";
 import * as std from "../../qjs-ext-lib/src/std.js";
-import * as os from "../../qjs-ext-lib/src/os.js";
-import { ansi } from "../../justjs/ansiStyle.js";
-import { exec as execAsync } from "../../qjs-ext-lib/src/process.js";
-import Color from "./Color/color.js";
-
-globalThis.Color = Color;
-
-globalThis.OS = os;
-
-globalThis.STD = std;
-
-/**
- * @type {string}
- */
-globalThis.HOME_DIR = std.getenv("HOME");
 
 /**
  * Represents a system-level error that extends the built-in Error class.
@@ -22,7 +8,7 @@ globalThis.HOME_DIR = std.getenv("HOME");
  * @class
  * @extends Error
  */
-globalThis.SystemError = class SystemError extends Error {
+export class SystemError extends Error {
   /**
    * Creates an instance of SystemError.
    *
@@ -40,17 +26,13 @@ globalThis.SystemError = class SystemError extends Error {
   /**
    * Logs the error in a formatted style, using ANSI codes for styling.
    *
-   * @param {boolean} inspect - Wheather to print the error body or not for inspection.
+   * @param {boolean} inspect - Whether to print the error body or not for inspection.
    */
-  log() {
-    STD.err.puts(
+  log(inspect = false) {
+    std.err.puts(
       `\n${ansi.styles(["bold", "red"])
-      }  ${this.name}:${ansi.style.reset}\n${ansi.style.red}  ${this.description}${ansi.style.reset}\n\n${this.body ?? ""
+      }  ${this.name}:${ansi.style.reset}\n${ansi.style.red}  ${this.description}${ansi.style.reset}\n\n${inspect && this.body ? this.body : ""
       }\n`,
     );
   }
-};
-
-globalThis.execAsync = execAsync;
-
-globalThis.EXIT = "exit";
+}

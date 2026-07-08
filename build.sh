@@ -41,7 +41,7 @@
   ## Build WallRizz then install it.
   cd WallRizz/src &&
   echo -e "\e[1;4;33mBuilding WallRizz...\e[0m" &&
-  qjsc -flto -D extensionHandlerWorker.js -o WallRizz main.js &&
+  qjsc -flto -D extensions/ExtensionHandlerWorker.js -o WallRizz main.js &&
   echo -e "\e[1;4;33mInstalling WallRizz...\e[0m" &&
   sudo cp WallRizz /usr/bin/ &&
   echo -e "\e[1;32mWallRizz installation completed successfully.\e[0m"
