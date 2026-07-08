@@ -43,7 +43,7 @@ export class GalleryView {
       },
       origin: "0x1",
       onFocus: (_, index) => {
-        if (!this.config.onFocus) return;
+        if (!this.config.onFocus && !USER_ARGUMENTS.focusSet) return;
         const wallpaper = this.wallpapers[index];
         return this.onFocusCallback?.(wallpaper);
       },
@@ -359,7 +359,8 @@ export class GalleryView {
       },
 
       [keySequences.Space]: () => {
-        USER_ARGUMENTS.hold = !USER_ARGUMENTS.hold;
+        USER_ARGUMENTS.focusSet = !USER_ARGUMENTS.focusSet;
+        USER_ARGUMENTS.hold = USER_ARGUMENTS.focusSet;
       },
       [keySequences.Tab]: () => {
         currentHighlight = currentHighlight === "border" ? "fill" : "border";

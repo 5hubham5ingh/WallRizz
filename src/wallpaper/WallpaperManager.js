@@ -127,7 +127,7 @@ export default class WallpaperManager {
       this.cacheManager.getCacheDir(),
       this.handleSelection.bind(this),
       this.getWallpaperPath.bind(this),
-      this.config.onFocus ? this.handleSelection.bind(this) : () => {},
+      this.handleSelection.bind(this),
       this.config,
     );
     await ui.init();
