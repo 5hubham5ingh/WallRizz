@@ -139,6 +139,7 @@ export class GalleryView {
       getHiRes = () => {},
     },
   ) {
+    let currentHighlight = highlightType;
     if (!Array.isArray(pngs)) throw TypeError("'pngs' must be an array of png");
 
     const [originX, originY] = origin ? origin.split("x").map(Number) : [0, 0];
@@ -169,7 +170,7 @@ export class GalleryView {
     const maxCellsInGrid = targetCols * targetRows;
     const totalPages = Math.ceil(pngs.length / maxCellsInGrid);
 
-    const label = highlightType === "fill" ? "█" : " ";
+    const label = () => currentHighlight === "fill" ? "█" : " ";
 
     const renderHighlight = (cellIndex) => {
       if (cellIndex < 0 || cellIndex >= coordinates.length) return;
@@ -182,7 +183,7 @@ export class GalleryView {
 
       STD.out.puts(cursorTo(0, 0), eraseDown);
 
-      if (highlightType !== "fill") {
+      if (currentHighlight !== "fill") {
         const borderedLines = this.border(
           Math.max(0, drawH),
           Math.max(0, drawW),
@@ -192,7 +193,7 @@ export class GalleryView {
           STD.out.puts(cursorTo(x, y + i) + borderedLines[i]);
         }
       } else {
-        const row = label.repeat(drawW);
+        const row = label().repeat(drawW);
         for (let i = 0; i < drawH; i++) {
           STD.out.puts(cursorTo(x, y + i) + row);
         }
@@ -355,6 +356,15 @@ export class GalleryView {
         if (pngs[globalIndex]) {
           return onSelect(pngs[globalIndex], globalIndex);
         }
+      },
+
+      [keySequences.Space]: () => {
+        USER_ARGUMENTS.hold = !USER_ARGUMENTS.hold;
+      },
+      [keySequences.Tab]: () => {
+        currentHighlight = currentHighlight === "border" ? "fill" : "border";
+        USER_ARGUMENTS.highlight = currentHighlight;
+        renderHighlight(currentCell);
       },
 
       "q": handleExit,
