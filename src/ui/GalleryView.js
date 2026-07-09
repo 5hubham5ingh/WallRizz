@@ -128,6 +128,8 @@ export class GalleryView {
     let params = "a=T,t=f,f=100,q=2";
     if (size?.columns) params += `,c=${size.columns}`;
     if (size?.rows) params += `,r=${size.rows}`;
+    // BUG: kitty ignores s/v/w/h source-rect params, so zoom/pan transmit has no effect.
+    // Must pre-crop the image via magick before transmission instead.
     if (sourceRect) {
       if (sourceRect.x !== undefined) params += `,s=${Math.round(sourceRect.x)}`;
       if (sourceRect.y !== undefined) params += `,v=${Math.round(sourceRect.y)}`;
@@ -284,7 +286,8 @@ export class GalleryView {
 
     const renderFullscreen = async () => {
       const globalIndex = (currentPage * maxCellsInGrid) + currentCell;
-      const filePath = getHiRes(pngs[globalIndex]) ?? pngs[globalIndex];
+      // BUG: if getHiRes returns null, falling back to pngSource obj instead of filePath string
+      const filePath = getHiRes(pngs[globalIndex]) ?? pngs[globalIndex].filePath;
 
       const srcW = imgWidth / zoomLevel;
       const srcH = imgHeight / zoomLevel;
@@ -292,6 +295,8 @@ export class GalleryView {
       panX = Math.max(0, Math.min(panX, imgWidth - srcW));
       panY = Math.max(0, Math.min(panY, imgHeight - srcH));
 
+      // BUG: s/v/w/h source-rect params are ignored by kitty, so pan offsets do nothing.
+      // Must pre-crop with magick before transmission.
       return this.renderImage({ filePath }, {
         columns: terminalWidth,
         rows: terminalHeight,
@@ -311,7 +316,8 @@ export class GalleryView {
           zoomLevel = 1.0;
           panX = 0;
           panY = 0;
-          const filePath = getHiRes(pngs[globalIndex]) ?? pngs[globalIndex];
+          // BUG: falling back to pngSource object instead of .filePath string
+          const filePath = getHiRes(pngs[globalIndex]) ?? pngs[globalIndex].filePath;
           const dims = await this.getImageDimensions(filePath);
           imgWidth = dims.width;
           imgHeight = dims.height;
