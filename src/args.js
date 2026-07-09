@@ -30,7 +30,6 @@ export function parseArguments() {
     githubApiKey: "--github-key",
     showKeyMap: "--show-keymap",
     disableNotification: "--disable-notification",
-    disableAutoScaling: "--disable-autoscaling",
     setInterval: "--set-interval",
     setIntervalCallback: "--set-interval-callback",
     thumbnailSize: "--thumbnail",
@@ -120,9 +119,6 @@ export function parseArguments() {
       [argNames.disableNotification]: arg
         .flag(false)
         .desc("Disable desktop notifications."),
-      [argNames.disableAutoScaling]: arg
-        .flag(false)
-        .desc("Disable auto scale terminal size to fit all images."),
       [argNames.thumbnailSize]: arg
         .str("600x338")
         .reg(/^\d+x\d+$/)
@@ -174,7 +170,6 @@ export function parseArguments() {
       "-k": argNames.githubApiKey,
       "-m": argNames.showKeyMap,
       "-n": argNames.disableNotification,
-      "-a": argNames.disableAutoScaling,
       "-v": argNames.setInterval,
       "-f": argNames.setIntervalCallback,
       "-o": argNames.hold,

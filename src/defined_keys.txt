@@ -1,0 +1,26 @@
+[argNames.enableLightTheme]
+[argNames.enablePagination]
+[argNames.gridSize]
+[argNames.imageSize]
+[argNames.padding]
+[argNames.setRandomWallpaper]
+[argNames.wallpapersDirectory]
+colorExtractionCommand
+disableNotification
+downloadWallpaperDaemonHandlerScript
+githubApiKey
+highlight
+hold
+inspection
+"Invalid grid size. \n Ex
+"Invalid padding, it should of VERTICLE_PADDINGxHORIZONTAL_PADDING format. \n Ex
+"Invalid size, it should be of WIDTHxHEIGHT format. \n Ex
+onFocus
+previewMode
+processLimit
+setInterval
+setIntervalCallback
+showKeyMap
+test
+thumbnailSize
+update

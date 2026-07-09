@@ -51,9 +51,6 @@ export type UserArguments = {
   /** Disable system notifications */
   disableNotification: boolean;
 
-  /** Disable automatic scaling of wallpapers to screen size */
-  disableAutoScaling: boolean;
-
   /** Set daemon mode to randomly apply wallpaper at set intervel */
   setInterval: number;
 

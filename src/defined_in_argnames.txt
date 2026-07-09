@@ -1,0 +1,27 @@
+colorExtractionCommand
+disableNotification
+downloadThemeExtensionScripts
+downloadWallpaperDaemonHandlerScript
+enableLightTheme
+enablePagination
+githubApiKey
+gridSize
+highlight
+hold
+imageSize
+inspection
+"Invalid grid size. \n Ex
+"Invalid padding, it should of VERTICLE_PADDINGxHORIZONTAL_PADDING format. \n Ex
+"Invalid size, it should be of WIDTHxHEIGHT format. \n Ex
+onFocus
+padding
+previewMode
+processLimit
+setInterval
+setIntervalCallback
+setRandomWallpaper
+showKeyMap
+test
+thumbnailSize
+update
+wallpapersDirectory
