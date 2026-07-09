@@ -236,8 +236,9 @@ export class GalleryView {
 
     OS.ttySetRaw();
     STD.out.puts(cursorHide);
-    await renderPage();
-    let isFullScreen = false;
+    try {
+      await renderPage();
+      let isFullScreen = false;
 
     const moveSelectionDown = () => {
       if (isFullScreen) return;
@@ -371,7 +372,10 @@ export class GalleryView {
       "q": handleExit,
     });
 
-    print(cursorShow);
+    } finally {
+      STD.out.puts(clearTerminal);
+      print(cursorShow);
+    }
   }
 
   border(height, width) {
