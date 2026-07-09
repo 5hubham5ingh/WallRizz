@@ -68,6 +68,14 @@ export class GalleryView {
     return `${cols}x${rows}`;
   }
 
+  async getImageDimensions(filePath) {
+    const output = await execAsync([
+      "magick", "identify", "-format", "%w %h", filePath,
+    ]);
+    const [width, height] = output.split(" ").map(Number);
+    return { width, height };
+  }
+
   toBase64(str) {
     const chars =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -93,7 +101,7 @@ export class GalleryView {
     return result;
   }
 
-  async renderImage(pngSource, size, position) {
+  async renderImage(pngSource, size, position, sourceRect) {
     const tempFile = pngSource.filePath.endsWith(".png")
       ? pngSource.filePath
       : `/tmp/${pngSource.filePath.split("/").at(-1)}.png`;
@@ -120,6 +128,12 @@ export class GalleryView {
     let params = "a=T,t=f,f=100,q=2";
     if (size?.columns) params += `,c=${size.columns}`;
     if (size?.rows) params += `,r=${size.rows}`;
+    if (sourceRect) {
+      if (sourceRect.x !== undefined) params += `,s=${Math.round(sourceRect.x)}`;
+      if (sourceRect.y !== undefined) params += `,v=${Math.round(sourceRect.y)}`;
+      if (sourceRect.w !== undefined) params += `,w=${Math.round(sourceRect.w)}`;
+      if (sourceRect.h !== undefined) params += `,h=${Math.round(sourceRect.h)}`;
+    }
 
     const escapeSequence = `\x1b_G${params};${encodedPath}\x1b\\`;
     STD.out.puts(escapeSequence);
@@ -239,6 +253,11 @@ export class GalleryView {
     try {
       await renderPage();
       let isFullScreen = false;
+      let zoomLevel = 1.0;
+      let panX = 0;
+      let panY = 0;
+      let imgWidth = 0;
+      let imgHeight = 0;
 
     const moveSelectionDown = () => {
       if (isFullScreen) return;
@@ -263,21 +282,89 @@ export class GalleryView {
       }
     };
 
-    const toggleFullscreen = () => {
+    const renderFullscreen = async () => {
+      const globalIndex = (currentPage * maxCellsInGrid) + currentCell;
+      const filePath = getHiRes(pngs[globalIndex]) ?? pngs[globalIndex];
+
+      const srcW = imgWidth / zoomLevel;
+      const srcH = imgHeight / zoomLevel;
+
+      panX = Math.max(0, Math.min(panX, imgWidth - srcW));
+      panY = Math.max(0, Math.min(panY, imgHeight - srcH));
+
+      return this.renderImage({ filePath }, {
+        columns: terminalWidth,
+        rows: terminalHeight,
+      }, { row: originX, column: originY }, {
+        x: Math.round(panX),
+        y: Math.round(panY),
+        w: Math.round(srcW),
+        h: Math.round(srcH),
+      });
+    };
+
+    const toggleFullscreen = async () => {
       const globalIndex = (currentPage * maxCellsInGrid) + currentCell;
       if (pngs[globalIndex]) {
         if (isFullScreen = !isFullScreen) {
           print(enterAlternativeScreen);
-          isFullScreen = true;
+          zoomLevel = 1.0;
+          panX = 0;
+          panY = 0;
           const filePath = getHiRes(pngs[globalIndex]) ?? pngs[globalIndex];
-
-          return this.renderImage({ filePath }, {
-            columns: terminalWidth,
-            rows: terminalHeight,
-          }, { row: originX, column: originY });
+          const dims = await this.getImageDimensions(filePath);
+          imgWidth = dims.width;
+          imgHeight = dims.height;
+          return renderFullscreen();
         }
         print(exitAlternativeScreen);
       }
+    };
+
+    const zoomIn = async () => {
+      if (!isFullScreen) return;
+      const newZoom = Math.min(5.0, zoomLevel * 1.25);
+      panX += (imgWidth / zoomLevel - imgWidth / newZoom) / 2;
+      panY += (imgHeight / zoomLevel - imgHeight / newZoom) / 2;
+      zoomLevel = newZoom;
+      await renderFullscreen();
+    };
+
+    const zoomOut = async () => {
+      if (!isFullScreen) return;
+      const newZoom = Math.max(1.0, zoomLevel / 1.25);
+      panX += (imgWidth / zoomLevel - imgWidth / newZoom) / 2;
+      panY += (imgHeight / zoomLevel - imgHeight / newZoom) / 2;
+      zoomLevel = newZoom;
+      await renderFullscreen();
+    };
+
+    const panUp = async () => {
+      if (!isFullScreen || zoomLevel <= 1.0) return;
+      const srcH = imgHeight / zoomLevel;
+      panY = Math.max(0, panY - Math.max(1, Math.floor(srcH / 10)));
+      await renderFullscreen();
+    };
+
+    const panDown = async () => {
+      if (!isFullScreen || zoomLevel <= 1.0) return;
+      const srcH = imgHeight / zoomLevel;
+      panY = Math.min(imgHeight - srcH, panY + Math.max(1, Math.floor(srcH / 10)));
+      await renderFullscreen();
+    };
+
+    const panLeft = async () => {
+      if (!isFullScreen || zoomLevel <= 1.0) return;
+      const srcW = imgWidth / zoomLevel;
+      panX = Math.max(0, panX - Math.max(1, Math.floor(srcW / 10)));
+      await renderFullscreen();
+    };
+
+    const panRight = async () => {
+      if (!isFullScreen || zoomLevel <= 1.0) return;
+      const srcW = imgWidth / zoomLevel;
+      panX = Math.min(imgWidth - srcW, panX + Math.max(1, Math.floor(srcW / 10)));
+      await renderFullscreen();
     };
 
     const moveSelection = async (direction) => {
@@ -336,18 +423,44 @@ export class GalleryView {
     };
 
     await handleKeysPress({
-      [keySequences.ArrowDown]: moveSelectionDown,
-      "j": moveSelectionDown,
+      [keySequences.ArrowDown]: () => {
+        if (isFullScreen && zoomLevel > 1) return panDown();
+        moveSelectionDown();
+      },
+      "j": () => {
+        if (isFullScreen && zoomLevel > 1) return panDown();
+        moveSelectionDown();
+      },
 
-      [keySequences.ArrowUp]: moveSelectionUp,
-      "k": moveSelectionUp,
+      [keySequences.ArrowUp]: () => {
+        if (isFullScreen && zoomLevel > 1) return panUp();
+        moveSelectionUp();
+      },
+      "k": () => {
+        if (isFullScreen && zoomLevel > 1) return panUp();
+        moveSelectionUp();
+      },
 
-      [keySequences.ArrowRight]: () => moveSelection("NEXT"),
-      "l": () => moveSelection("NEXT"),
-      [keySequences.ArrowLeft]: () => moveSelection("PREV"),
-      "h": () => moveSelection("PREV"),
+      [keySequences.ArrowRight]: () => {
+        if (isFullScreen && zoomLevel > 1) return panRight();
+        return moveSelection("NEXT");
+      },
+      "l": () => {
+        if (isFullScreen && zoomLevel > 1) return panRight();
+        return moveSelection("NEXT");
+      },
+      [keySequences.ArrowLeft]: () => {
+        if (isFullScreen && zoomLevel > 1) return panLeft();
+        return moveSelection("PREV");
+      },
+      "h": () => {
+        if (isFullScreen && zoomLevel > 1) return panLeft();
+        return moveSelection("PREV");
+      },
 
       "f": toggleFullscreen,
+      "+": zoomIn,
+      "-": zoomOut,
 
       "H": prevPage,
       "L": nextPage,
