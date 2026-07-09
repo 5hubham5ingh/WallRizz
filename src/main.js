@@ -61,6 +61,7 @@ class WallRizz {
   handleShowKeymaps() {
     if (!this.config.showKeyMap) return;
     UserInterface.printKeyMaps();
+    throw EXIT;
   }
 
   async handleRunUpdate() {
