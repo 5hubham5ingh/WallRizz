@@ -1,3 +1,6 @@
 [submodule "qjs-ext-lib"]
 	path = qjs-ext-lib
 	url = https://github.com/ctn-malone/qjs-ext-lib.git
+[submodule "quickjs"]
+	path = quickjs
+	url = https://github.com/bellard/quickjs.git

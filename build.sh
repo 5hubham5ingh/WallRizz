@@ -1,47 +1,42 @@
 #!/bin/env bash
+set -euo pipefail
 
-# Build script for WallRizz
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-## Fetch the QuickJS source code, then build and install the compiler and interpreter in the system.
-  if ! [ -d "quickjs" ]; then
-     echo -e "\e[1;4;33mFetching source code...\e[0m" &&
-     git clone --depth 1 https://github.com/bellard/quickjs.git &&
-     cd quickjs &&
-     make &&
-     sudo make install &&
-     cd ..
-   else
-     echo "\"quickjs\" found, skipping \"quickjs\" download and installation."
-  fi &&
+# 1. If not already inside the WallRizz repo, clone it with submodules
+if [ ! -f "$SCRIPT_DIR/src/main.js" ]; then
+  echo "Cloning WallRizz with submodules..."
+  git clone --recurse-submodules https://github.com/5hubham5ingh/WallRizz.git
+  cd WallRizz
+else
+  echo "Already in WallRizz repo, updating submodules..."
+  cd "$SCRIPT_DIR"
+  git submodule update --init --recursive
+fi
 
-  ## Fetch the required library.
-  if ! [ -d "qjs-ext-lib" ]; then
-     curl -L -o out.zip https://github.com/ctn-malone/qjs-ext-lib/archive/refs/tags/0.12.4.zip &&
-     unzip out.zip &&
-     mv qjs-ext-lib-0.12.4 qjs-ext-lib &&
-     rm out.zip
+# 2. Checkout the latest release tag
+LATEST_TAG=$(git tag --sort=-v:refname | head -1)
+echo "Checking out $LATEST_TAG..."
+git checkout "$LATEST_TAG"
+
+# 3. Build and install quickjs if qjsc is not available
+if command -v qjsc &>/dev/null; then
+  read -p "qjsc is already installed. Rebuild quickjs? [y/N] " -r
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Rebuilding quickjs..."
+    cd quickjs && make && sudo make install && cd ..
   else
-     echo "\"qjs-ext-lib\" found, skipping \"qjs-ext-lib\" download and installation."
-  fi &&
+    echo "Skipping quickjs build."
+  fi
+else
+  echo "Building quickjs..."
+  cd quickjs && make && sudo make install && cd ..
+fi
 
-  ## Fetch helper scripts
-  if ! [ -d "justjs" ]; then
-     git clone --depth 1 https://github.com/5hubham5ingh/justjs.git
-  else
-     echo "\"justjs\" found, skipping \"justjs\" download."
-  fi &&
-
-  ## Clone the WallRizz project
-  if ! [ -d "WallRizz" ]; then
-     git clone --depth 1 https://github.com/5hubham5ingh/WallRizz.git
-  else
-     echo "\"WallRizz\" found, skipping \"WallRizz\" download."
-  fi &&
-
-  ## Build WallRizz then install it.
-  cd WallRizz/src &&
-  echo -e "\e[1;4;33mBuilding WallRizz...\e[0m" &&
-  qjsc -flto -D extensions/ExtensionHandlerWorker.js -o WallRizz main.js &&
-  echo -e "\e[1;4;33mInstalling WallRizz...\e[0m" &&
-  sudo cp WallRizz /usr/bin/ &&
-  echo -e "\e[1;32mWallRizz installation completed successfully.\e[0m"
+# 4. Build and install WallRizz
+cd src
+echo "Building WallRizz..."
+qjsc -flto -D extensions/ExtensionHandlerWorker.js -o WallRizz main.js
+echo "Installing WallRizz..."
+sudo cp WallRizz /usr/bin/
+echo "WallRizz installation completed successfully."
