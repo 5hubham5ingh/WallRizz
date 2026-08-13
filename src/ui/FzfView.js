@@ -110,7 +110,10 @@ export class FzfView {
     }
 
     const wallpaper = previewer.stdout.split("\n")[0].trim();
-    const selection = this.wallpapers.find((wp) => wp.name === wallpaper);
+    const cleanWallpaper = wallpaper.replace(/^"|"$/g, "");
+    const selection = this.wallpapers.find(
+      (wp) => wp.name === wallpaper || wp.name === cleanWallpaper,
+    );
     await this.handleSelection(selection);
     throw EXIT;
   }
