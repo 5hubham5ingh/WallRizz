@@ -1,19 +1,19 @@
 /*
- For:            swww, https://github.com/LGFae/swww
+ For:            awww, https://codeberg.org/LGFae/awww
  Author:         https://github.com/5hubham5ingh
- Prerequisite:   swww daemon should be running
+ Prerequisite:   awww daemon should be running
 */
 
 export async function setWallpaper(wallpaperPath) {
-  const command = createSwwwCommand(
+  const command = createAwwwCommand(
     wallpaperPath,
-    generateRandomSwwwOptions(),
+    generateRandomAwwwOptions(),
   );
   await execAsync(command);
 }
 
-function createSwwwCommand(imagePath, options) {
-  const command = ["swww", "img", imagePath];
+function createAwwwCommand(imagePath, options) {
+  const command = ["awww", "img", imagePath];
 
   // Adding options to the command
   if (options.noResize) {
@@ -50,7 +50,7 @@ function createSwwwCommand(imagePath, options) {
   return command;
 }
 
-function generateRandomSwwwOptions() {
+function generateRandomAwwwOptions() {
   function getRandomElement(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   }

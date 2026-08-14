@@ -18,7 +18,7 @@ Contributions are always welcome! Feel free to submit a pull request, on dev bra
   - **Wallpaper Handler Scripts:**  
     Wallpaper daemon handler scripts should go in the [wallpaperDaemonHandlerScripts](https://github.com/5hubham5ingh/WallRizz/tree/main/wallpaperDaemonHandlerScripts) directory.  
     These scripts manage the handling of wallpaper-related tasks, such as changing wallpapers or managing their configurations.  
-    Example: `swww@5hubham5ingh.js`
+    Example: `awww@5hubham5ingh.js`
 
 - **Script Header:**  
   At the beginning of the script, include information about its purpose, author, version, and prerequisites.  
