@@ -27,42 +27,43 @@ export default class WallpaperManager {
   }
 
   loadWallpapers() {
-    const [imgFiles, error] = OS.readdir(
-      this.config.wallpapersDirectory,
-    );
-    if (error !== 0) {
-      throw new Error(
-        "Failed to read wallpapers directory:\n" +
-          this.config.wallpapersDirectory,
-      );
-    }
-    const wallpapers = imgFiles.filter(
-      (name) =>
-        name !== "." && name !== ".." && this.isSupportedImageFormat(name),
-    ).map((name) => {
-      const [stats, error] = OS.stat(
-        this.config.wallpapersDirectory.concat(name),
-      );
+    const baseDir = this.config.wallpapersDirectory.endsWith("/")
+      ? this.config.wallpapersDirectory
+      : this.config.wallpapersDirectory + "/";
 
-      if (error) {
-        throw new Error(
-          "Failed to read wallpaper stat for:\n" +
-            this.config.wallpapersDirectory.concat(name),
-        );
+    const wallpapers = [];
+
+    const scanDir = (dirPath, relPrefix = "") => {
+      const [imgFiles, error] = OS.readdir(dirPath);
+      if (error !== 0) return;
+
+      for (const name of imgFiles) {
+        if (name === "." || name === "..") continue;
+
+        const fullPath = dirPath.concat(name);
+        const relName = relPrefix ? relPrefix.concat("/", name) : name;
+        const [stats, statError] = OS.stat(fullPath);
+
+        if (statError !== 0) continue;
+
+        if ((stats.mode & OS.S_IFMT) === OS.S_IFDIR) {
+          scanDir(fullPath.concat("/"), relName);
+        } else if (this.isSupportedImageFormat(name)) {
+          const { dev, ino } = stats;
+          wallpapers.push({
+            name: relName,
+            uniqueId: `${dev}${ino}.png`,
+          });
+        }
       }
-      const { dev, ino } = stats;
-      return {
-        name,
-        uniqueId: `${dev}${ino}`.concat(
-          ".png",
-        ),
-      };
-    });
+    };
+
+    scanDir(baseDir);
 
     if (!wallpapers.length) {
       throw new SystemError(
         "No wallpaper found in ".concat(this.config.wallpapersDirectory),
-        "Make sure the supported image file exists in the directory.",
+        "Make sure the supported image file exists in the directory or its subdirectories.",
       );
     }
 

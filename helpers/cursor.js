@@ -85,7 +85,7 @@ export const clearTerminal = isWindows
   // 2. Erases the whole screen including scrollback buffer
   // 3. Moves cursor to the top-left position
   // More info: https://www.real-world-systems.com/docs/ANSIcode.html
-  : `${eraseScreen}${ESC}3J${ESC}H`;
+  : `\x1b_Ga=d,d=A\x1b\\${eraseScreen}${ESC}3J${ESC}H`;
 
 export const enterAlternativeScreen = ESC + "?1049h";
 export const exitAlternativeScreen = ESC + "?1049l";

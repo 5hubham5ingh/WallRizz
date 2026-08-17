@@ -14,30 +14,25 @@ export class FzfView {
   }
 
   async render() {
-    const [width] = OS.ttyGetWinSize();
+    const [width] = OS.ttyGetWinSize() ?? [80, 24];
     const cachedColoursFile = STD.loadFile(
       Theme.wallpaperColoursCacheFilePath,
     );
-    if (!cachedColoursFile) return;
+    const cachedColours = cachedColoursFile ? JSON.parse(cachedColoursFile) : {};
 
-    const cachedColours = JSON.parse(cachedColoursFile);
     const wallColors = Object.fromEntries(
-      Object.entries(
-        cachedColours,
-      )
-        .map(([wallId, pallete]) => {
-          const wallpaperName = this.wallpapers.find((wallpaper) =>
-            wallpaper.uniqueId === wallId
-          )?.name;
-          return wallpaperName
-            ? [[wallpaperName.concat("#", wallId)], pallete]
-            : null;
-        })
-        .filter(Boolean),
+      this.wallpapers.map((wallpaper) => {
+        const wallId = wallpaper.uniqueId;
+        const palette = cachedColours[wallId] || [];
+        const wallpaperName = wallpaper.name;
+        return [[wallpaperName.concat("#", wallId)], palette];
+      }),
     );
 
+    const previewCols = (this.config.imageSize[0] + 2) * 2;
+
     const kittyPreviewCmd =
-      "--preview='printf \"\\x1b[0;0H\\x1b_Ga=T,t=f,f=100,q=2,c=${FZF_PREVIEW_COLUMNS};`echo -e {} | head -n 2 | tail -n 1`\\x1b\\\\\" >> /dev/tty'";
+      `--preview='printf "\\x1b[1;1H\\x1b_Ga=T,i=1,t=f,f=100,q=2,c=${previewCols};\`echo -e {} | head -n 2 | tail -n 1\`\\x1b\\\\" >> /dev/tty'`;
 
     const fzf = new Fzf();
     fzf.color("16,current-bg:-1")
@@ -45,7 +40,7 @@ export class FzfView {
       .delimiter("' '")
       .withNth("1")
       .previewWindow(
-        `wrap,border-none,left,${(this.config.imageSize[0] + 2) * 2}`,
+        `wrap,border-none,left,${previewCols}`,
       )
       .noInfo()
       .separator("' '")
@@ -64,9 +59,12 @@ export class FzfView {
         const [wpName, id] = wallpaperName.split("#");
         const name = wpName.includes(" ") ? `"${wpName}"` : wpName;
 
-        const wordLength = Math.floor(maxLineLength / palette.length) || 1;
+        const wordLength = palette.length
+          ? (Math.floor(maxLineLength / palette.length) || 1)
+          : 1;
 
         const paletteVisualization = (() => {
+          if (!palette.length) return "";
           const line = palette
             .map((color) =>
               `${ansi.bgHex(color)}${ansi.hex(color)}${"-".repeat(wordLength)}`
@@ -101,6 +99,9 @@ export class FzfView {
         "Make sure fzf is installed and available in the system.",
         error,
       );
+    } finally {
+      STD.out.puts("\x1b_Ga=d,d=A\x1b\\");
+      STD.out.flush();
     }
 
     if (!previewer.success) {
@@ -109,7 +110,10 @@ export class FzfView {
     }
 
     const wallpaper = previewer.stdout.split("\n")[0].trim();
-    const selection = this.wallpapers.find((wp) => wp.name === wallpaper);
+    const cleanWallpaper = wallpaper.replace(/^"|"$/g, "");
+    const selection = this.wallpapers.find(
+      (wp) => wp.name === wallpaper || wp.name === cleanWallpaper,
+    );
     await this.handleSelection(selection);
     throw EXIT;
   }
