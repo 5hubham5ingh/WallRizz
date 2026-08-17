@@ -14,7 +14,7 @@ export class FzfView {
   }
 
   async render() {
-    const [width] = OS.ttyGetWinSize();
+    const [width] = OS.ttyGetWinSize() ?? [80, 24];
     const cachedColoursFile = STD.loadFile(
       Theme.wallpaperColoursCacheFilePath,
     );

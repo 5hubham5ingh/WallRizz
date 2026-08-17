@@ -27,7 +27,7 @@ export class GalleryView {
       meta: img,
     }));
 
-    const [terminalWidth, terminalHeight] = OS.ttyGetWinSize();
+    const [terminalWidth, terminalHeight] = OS.ttyGetWinSize() ?? [80, 24];
 
     const gridSize = this.config.enablePagination
       ? `${this.config.gridSize[1]}x${this.config.gridSize[0]}`
@@ -70,7 +70,7 @@ export class GalleryView {
 
   async getImageDimensions(filePath) {
     const output = await execAsync([
-      "magick", "identify", "-format", "%w %h", filePath,
+      "magick", "identify", "-format", "%w %h", filePath.concat("[0]"),
     ]);
     const [width, height] = output.split(" ").map(Number);
     return { width, height };
@@ -112,7 +112,7 @@ export class GalleryView {
       print("Loading...");
       await execAsync([
         "magick",
-        pngSource.filePath,
+        pngSource.filePath.concat("[0]"),
         "-type",
         "truecolor",
         tempFile,

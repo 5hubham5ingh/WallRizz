@@ -37,7 +37,7 @@ export class CacheManager {
       if (doesWallpaperCacheExist(wallpaper.uniqueId)) return;
       return await execAsync([
         "magick",
-        this.config.wallpapersDirectory.concat(wallpaper.name),
+        this.config.wallpapersDirectory.concat(wallpaper.name, "[0]"),
         "-resize",
         this.config.thumbnailSize,
         "-quality",

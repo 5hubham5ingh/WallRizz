@@ -47,7 +47,7 @@ export function parseArguments() {
         .path(os.getcwd()[0])
         .env("WALLPAPER_DIR")
         .check()
-        .map((path) => path.concat("/"))
+        .map((path) => path.endsWith("/") ? path : path.concat("/"))
         .desc("Wallpaper directory path."),
       [argNames.setRandomWallpaper]: arg
         .flag(false)
